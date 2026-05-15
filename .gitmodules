@@ -1,0 +1,6 @@
+[submodule "external/litehtml"]
+	path = external/litehtml
+	url = https://github.com/yus1108/litehtml.git
+[submodule "external/quickjs"]
+	path = external/quickjs
+	url = https://github.com/yus1108/quickjs.git
