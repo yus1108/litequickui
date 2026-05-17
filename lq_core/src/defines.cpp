@@ -1,4 +1,4 @@
-#include "lq_debug.hpp"
+#include "lq_core/defines.h"
 
 #include <cwchar>
 #include <cstdio>

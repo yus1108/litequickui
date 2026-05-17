@@ -1,50 +1,32 @@
 #pragma once
 
-#include "lq_core.h"
+#include "lq_core/document.h"
 
-#include <vector>
+#include <unordered_map>
 
 #include <litehtml.h>
-
-enum
-{
-	LQ_UINT8_MAX_SIZE = 4,
-};
-
-typedef struct lq_utf8
-{
-	lq_byte_t  bytes[LQ_UINT8_MAX_SIZE];
-	lq_uint8_t size;
-} *lq_utf8_t;
-
-typedef struct lq_utf8_string
-{
-	lq_byte_t*  data;
-	lq_uint32_t context_index;
-	lq_uint32_t length;
-	lq_uint32_t size;
-} *lq_utf8_string_t;
-
-lq_bool_t lq_utf8_string_inspect(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_byte_t* data);
 
 class lq_document_container : public litehtml::document_container
 {
 public:
 	        lq_document_container
 			(
-				lq_context_t context, 
 				lq_document_t document, 
 				const lq_document_callbacks_t* callbacks
-			) noexcept : _document(document), _context(context), _callbacks(*callbacks) {}
+			) noexcept : _document(document), _callbacks(*callbacks) {}
 	virtual ~lq_document_container(void) = default;
 
 private:
+	virtual litehtml::uint_ptr create_font(const litehtml::font_description& descr, const litehtml::document* doc, litehtml::font_metrics* fm) noexcept override;
+
+	virtual void delete_font(litehtml::uint_ptr hFont) noexcept override;
+
 	virtual const char*       get_default_font_name(void) const noexcept override;
 	virtual litehtml::pixel_t get_default_font_size(void) const noexcept override;
 	virtual void              get_media_features(litehtml::media_features& media) const noexcept override;
 
-	virtual litehtml::uint_ptr create_font(const litehtml::font_description& descr, const litehtml::document* doc, litehtml::font_metrics* fm) override;
-	virtual void delete_font(litehtml::uint_ptr hFont) override;
+	virtual void set_caption(const char* caption) noexcept override;
+
 	virtual litehtml::pixel_t text_width(const char* text, litehtml::uint_ptr hFont) override;
 	virtual void draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos) override;
 	virtual litehtml::pixel_t pt_to_px(float pt) const override;
@@ -58,7 +40,6 @@ private:
 	virtual void draw_conic_gradient(litehtml::uint_ptr hdc, const litehtml::background_layer& layer, const litehtml::background_layer::conic_gradient& gradient) override;
 	virtual void draw_borders(litehtml::uint_ptr hdc, const litehtml::borders& borders, const litehtml::position& draw_pos, bool root) override;
 	virtual void set_base_url(const char* base_url) override;
-	virtual void set_caption(const char* caption) override;
 	virtual void link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el) override;
 	virtual void on_anchor_click(const char* url, const litehtml::element::ptr& el) override;
 	virtual bool on_element_click(const litehtml::element::ptr& el) override;
@@ -74,20 +55,15 @@ private:
 
 private:
 	lq_document_callbacks_t _callbacks = {};
-	lq_context_t  _context = nullptr;
 	lq_document_t _document = nullptr;
 };
 
 typedef struct lq_document
 {
+	std::unordered_map<std::string, lq_utf8_str_t> shared_strs;
 	litehtml::document::ptr base;
 	lq_document_container*  container;
 	void*       user_data;
-	lq_uint32_t context_index;
 } *lq_document_t;
 
-typedef struct lq_context
-{
-	std::vector<lq_utf8_string_t> utf8_strings;
-	std::vector<lq_document_t>    documents;
-} *lq_context_t;
+lq_utf8_str_t lq_document_get_shared_str(lq_document_t document, const lq_char_t* cstr);

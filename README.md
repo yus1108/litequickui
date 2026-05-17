@@ -35,11 +35,11 @@ All original copyright and license notices are preserved.
 ## 📦 Project Structure
 ```
 litequickui/
- ├─ litequickui              # core + text backend + graphics backend
- ├─ litequickui_core/        # Core engine (litehtml + QuickJS)
- ├─ litequickui_dx12/        # DirectX 12 graphics backend (Windows)
- ├─ litequickui_hb_ft/       # HarfBuzz + FreeType text backend
- ├─ litequickui_test/        # Test application
+ ├─ litequickui/    # core + text backend + graphics backend
+ ├─ lq_core/        # Core engine (litehtml + QuickJS)
+ ├─ lq_dx12/        # DirectX 12 graphics backend (Windows)
+ ├─ lq_hb_ft/       # HarfBuzz + FreeType text backend
+ ├─ lq_test/        # Test application
  └─ external/
       ├─ litehtml/
       ├─ quickjs/

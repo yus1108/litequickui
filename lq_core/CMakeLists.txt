@@ -2,16 +2,20 @@ cmake_minimum_required(VERSION 3.20)
 project(litequickui-core)
 
 set(LITEQUICKUI_SOURCE 
-    "src/lq_debug.cpp"
-    "src/lq_core.cpp"
+    "src/defines.cpp"
+    "src/document.cpp"
+    "src/utf8.cpp"
 )
 set(LITEQUICKUI_HEADER 
     "include/lq_core.h"
-    "include/lq_core/type.h"
-    "src/lq_debug.hpp"
+    "include/lq_core/defines.h"
+    "include/lq_core/document.h"
+    "include/lq_core/types.h"
+    "include/lq_core/utf8.h"
+    "include/lq_core/wrapping_types.h"
 )
 
-add_library(lq_core ${LITEQUICKUI_SOURCE} ${LITEQUICKUI_HEADER})
+add_library(lq_core ${LITEQUICKUI_SOURCE} ${LITEQUICKUI_HEADER} )
 
 set_property(TARGET lq_core PROPERTY 
     CXX_STANDARD 20
