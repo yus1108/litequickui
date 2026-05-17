@@ -1,5 +1,4 @@
-﻿#include <iostream>
-using namespace std;
+﻿#include "lq_test.h"
 
 #include <lq_core.h>
 
@@ -24,17 +23,30 @@ using namespace std;
 	#define DETECT_MEMORY_LEAKS(goToLine)
 #endif // _WIN32
 
-typedef struct user_data
-{
-	lq_utf8_str_t default_font_name;
-} user_data_t;
-
 int main()
 {
 	DETECT_MEMORY_LEAKS(-1);
 
+	lq_bool_t result = test_lq_document_minimal_implementation();
+	if (result == lq_false)
+	{
+		LQ_ASSERT(false, "lq_document minimal implementation test failed");
+		return -1;
+	}
+
+	return 0;
+}
+
+lq_bool_t test_lq_document_minimal_implementation()
+{
+	typedef struct user_data
+	{
+		lq_utf8_str_t default_font_name;
+	} user_data_t;
+
+
 	const lq_char_t* html_cstr = "<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello CMake.</h1></body></html>";
-	cout << html_cstr << endl;
+	lq_debug_print_format_string(__FILE__, __LINE__, "Testing lq_document with HTML: %s", html_cstr);
 
 	lq_utf8_str_t html_utf8 = lq_utf8_str_create(html_cstr);
 	lq_document_callbacks_t callbacks = {};
@@ -80,14 +92,14 @@ int main()
 		};
 	callbacks.set_caption = [](lq_document_t document, const lq_byte_t* raw_utf8_caption)
 		{
-			cout << "Document caption: " << raw_utf8_caption << endl;
+			lq_debug_print_format_string(__FILE__, __LINE__, "Document caption set to: %s", raw_utf8_caption);
 		};
 	user_data_t userData;
 	userData.default_font_name = lq_utf8_str_create("Noto Sans");
 	lq_document_t document = lq_document_create(html_utf8, &callbacks, &userData);
 
-	lq_document_destroy(document);	
+	lq_document_destroy(document);
 	lq_utf8_str_destroy(html_utf8);
 	lq_utf8_str_destroy(userData.default_font_name);
-	return 0;
+	return lq_true;
 }

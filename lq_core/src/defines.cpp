@@ -25,7 +25,7 @@ inline void lq_print_debug_output_wstring(const wchar_t* formatBuffer)
 #endif
 }
 
-void lq_debug_print_format_string(const char* file, unsigned line, const char* format, ...)
+void lq_debug_print_format_string(const char* file, unsigned int line, const char* format, ...)
 {
 	constexpr const char DEBUG_OUTPUT_FORMAT[] = "%s(%u) %s\n";
 
@@ -63,7 +63,7 @@ void lq_debug_print_format_string(const char* file, unsigned line, const char* f
 	lq_print_debug_output_string(output.get());
 }
 
-void lq_debug_print_format_wstring(const wchar_t* file, unsigned line, const wchar_t* format, ...)
+void lq_debug_print_format_wstring(const wchar_t* file, unsigned int line, const wchar_t* format, ...)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	constexpr const wchar_t DEBUG_OUTPUT_FORMAT[] = L"%s(%u) %s\n";
