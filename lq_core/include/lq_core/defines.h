@@ -1,19 +1,20 @@
 #pragma once
 
 // MACRO DEFINITIONS
-#define LQ_WTEXT(x) L##x
+#define __LQ_WTEXT(x) L##x
+#define LQ_WTEXT(x) __LQ_WTEXT(x)
 
 #if defined(_DEBUG)
 	#define LQ_DEBUG_ONLY(_Expression) _Expression
-	#define LQ_DEBUG_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_string(__FILE__, (unsigned)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
-	#define LQ_WDEBUG_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_wstring(LQ_WTEXT(__FILE__), (unsigned)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
+	#define LQ_DEBUG_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_string(__FILE__, (unsigned int)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
+	#define LQ_WDEBUG_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_wstring(LQ_WTEXT(__FILE__), (unsigned int)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
 #else
 	#define LQ_DEBUG_ONLY(_Expression)
 	#define LQ_DEBUG_ASSERT(_Expression, _Format, ...)
 	#define LQ_WDEBUG_ASSERT(_Expression, _Format, ...)
 	#define LQ_TDEBUG_ASSERT(_Expression, _Format, ...)
 #endif
-#define LQ_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_string(__FILE__, (unsigned)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
+#define LQ_ASSERT(_Expression, _Format, ...) if (!(_Expression)) { lq_debug_print_format_string(__FILE__, (unsigned int)(__LINE__), _Format, __VA_ARGS__); __debugbreak(); } ((void)0)
 #define LQ_UNUSED(...) __VA_ARGS__
 
 #define LQ_STATIC_ASSERT(expr, msg) typedef char static_assertion_##msg[(expr) ? 1 : -1]
