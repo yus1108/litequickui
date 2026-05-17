@@ -56,14 +56,20 @@ void lq_document_container::get_media_features(litehtml::media_features& media) 
 
 void lq_document_container::set_caption(const char* caption) noexcept
 {
+	LQ_DEBUG_ASSERT(caption != nullptr, "Is this possible???");
+	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, caption) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.set_caption != nullptr, "set_caption callback must be provided.");
-	_callbacks.set_caption(_document, lq_document_get_shared_str(_document, caption));
+
+	_callbacks.set_caption(_document, reinterpret_cast<const lq_byte_t*>(caption));
 }
 
 litehtml::pixel_t lq_document_container::text_width(const char* text, litehtml::uint_ptr hFont)
 {
+	LQ_DEBUG_ASSERT(text != nullptr, "Is this possible???");
+	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, text) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.calc_text_width != nullptr, "calc_text_width callback must be provided.");
-	return _callbacks.calc_text_width(_document, lq_document_get_shared_str(_document, text), hFont);
+
+	return _callbacks.calc_text_width(_document, reinterpret_cast<const lq_byte_t*>(text), hFont);
 }
 
 void lq_document_container::draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)

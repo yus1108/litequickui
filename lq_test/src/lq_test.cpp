@@ -38,9 +38,11 @@ int main()
 
 	lq_utf8_str_t html_utf8 = lq_utf8_str_create(html_cstr);
 	lq_document_callbacks_t callbacks = {};
-	callbacks.calc_text_width = [](lq_document_t document, const lq_utf8_str_t text, lq_uintptr_t font_handle) -> lq_pixel_t
+	callbacks.calc_text_width = [](lq_document_t document, const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle) -> lq_pixel_t
 		{
-			return lq_utf8_str_length(text) * 10.0f; // Return a dummy width based on character count
+			lq_uint32_t length;
+			lq_inspect_raw_utf8(&length, nullptr, raw_utf8_text);
+			return length * 10.0f; // Return a dummy width based on character count
 		};
 	callbacks.create_font = [](lq_document_t document, const lq_html_font_description_t* font_desc, lq_html_font_metrics_t* out_metrics) -> lq_uintptr_t
 		{
@@ -76,9 +78,9 @@ int main()
 			out_media->device_height = 1080.0f;
 			out_media->color = 24;
 		};
-	callbacks.set_caption = [](lq_document_t document, const lq_utf8_str_t caption)
+	callbacks.set_caption = [](lq_document_t document, const lq_byte_t* raw_utf8_caption)
 		{
-			cout << "Document caption: " << lq_utf8_str_get_cstr(caption) << endl;
+			cout << "Document caption: " << raw_utf8_caption << endl;
 		};
 	user_data_t userData;
 	userData.default_font_name = lq_utf8_str_create("Noto Sans");

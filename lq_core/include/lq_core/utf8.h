@@ -2,6 +2,8 @@
 
 #include "types.h"
 
+lq_bool_t lq_inspect_raw_utf8(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_byte_t* raw_utf8);
+lq_bool_t lq_inspect_utf8_cstr(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_char_t* data);
 typedef struct lq_utf8* lq_utf8_t;
 typedef struct lq_utf8_str* lq_utf8_str_t;
 
