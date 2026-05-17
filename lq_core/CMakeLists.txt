@@ -7,6 +7,7 @@ set(LITEQUICKUI_SOURCE
 )
 set(LITEQUICKUI_HEADER 
     "include/lq_core.h"
+    "include/lq_core/type.h"
     "src/lq_debug.hpp"
 )
 

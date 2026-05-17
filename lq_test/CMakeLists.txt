@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(lq_test)
 
 add_executable(lq_test
-    src/main.cpp
+    "src/lq_test.cpp"
 )
 set_property(TARGET lq_test PROPERTY 
     CXX_STANDARD 20
