@@ -3,7 +3,8 @@ project(lq_test)
 
 add_executable(lq_test
     "lq_test.cpp"
- "lq_test.h")
+    "lq_test.h"
+)
 set_property(TARGET lq_test PROPERTY 
     CXX_STANDARD 20
     C_STANDARD 99

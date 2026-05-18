@@ -5,53 +5,80 @@
 
 litehtml::uint_ptr lq_document_container::create_font(const litehtml::font_description& descr, const litehtml::document* doc, litehtml::font_metrics* fm) noexcept
 {
+	LQ_DEBUG_ASSERT(doc != nullptr, "Document pointer provided to create_font callback is null.");
 	LQ_DEBUG_ASSERT(_callbacks.create_font != nullptr, "create_font callback must be provided.");
 
-	lq_html_font_description descr_wrapper;
-	descr_wrapper.family = lq_document_get_shared_str(_document, descr.family.c_str());
+	lq_wrapper_font_description descr_wrapper;
+	descr_wrapper.raw_utf8_family = descr.family.c_str();
 	descr_wrapper.size = descr.size;
-	descr_wrapper.style = (lq_html_font_style)descr.style;
+	descr_wrapper.style = (lq_wrapper_font_style)descr.style;
 	descr_wrapper.weight = descr.weight;
 	descr_wrapper.decoration_line = descr.decoration_line;
 	descr_wrapper.decoration_thickness = descr.decoration_thickness.is_predefined() ? 
-		lq_html_css_length_create_predef(descr.decoration_thickness.predef()) :
-		lq_html_css_length_create_value(descr.decoration_thickness.val(), (lq_html_css_length_units)descr.decoration_thickness.units());
-	descr_wrapper.decoration_style = (lq_html_text_decoration_style)descr.decoration_style;
+		lq_wrapper_css_length_create_predef(descr.decoration_thickness.predef()) :
+		lq_wrapper_css_length_create_value(descr.decoration_thickness.val(), (lq_wrapper_css_length_units)descr.decoration_thickness.units());
+	descr_wrapper.decoration_style = (lq_wrapper_text_decoration_style)descr.decoration_style;
 	descr_wrapper.decoration_color = lq_color_create(descr.decoration_color.red, descr.decoration_color.green, descr.decoration_color.blue, descr.decoration_color.alpha);
-	descr_wrapper.emphasis_style = lq_document_get_shared_str(_document, descr.emphasis_style.c_str());
+	descr_wrapper.raw_utf8_emphasis_style = descr.emphasis_style.c_str();
 	descr_wrapper.emphasis_color = lq_color_create(descr.emphasis_color.red, descr.emphasis_color.green, descr.emphasis_color.blue, descr.emphasis_color.alpha);
 	descr_wrapper.emphasis_position = descr.emphasis_position;
 	LQ_STATIC_ASSERT(sizeof(litehtml::font_description) == 136, FONT_DESCRIPTION_SIZE_CHANGED);
 
-	return _callbacks.create_font(_document, &descr_wrapper, reinterpret_cast<lq_html_font_metrics_t*>(fm));
+	return _callbacks.create_font(reinterpret_cast<lq_wrapper_font_metrics_t*>(fm), &descr_wrapper, reinterpret_cast<const lq_wrapper_document_t>(doc));
+	LQ_STATIC_ASSERT(sizeof(litehtml::font_metrics) == sizeof(lq_wrapper_font_metrics_t), WRAPPER_STRUCT_SIZE_MISMATCH);
 }
 
 void lq_document_container::delete_font(litehtml::uint_ptr hFont) noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.delete_font != nullptr, "delete_font callback must be provided.");
-	_callbacks.delete_font(_document, hFont);
+	_callbacks.delete_font(hFont, lq_document_get_user_data(_document));
+}
+
+void lq_document_container::draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
+{
+	LQ_DEBUG_ASSERT(text != nullptr, "Is this possible???");
+	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, text) == lq_true, "Is this possible???");
+	LQ_DEBUG_ASSERT(_callbacks.draw_text != nullptr, "draw_text callback must be provided.");
+
+	lq_color_t color_wrapper = lq_color_create(color.red, color.green, color.blue, color.alpha);
+
+	_callbacks.draw_text(
+		hdc,
+		lq_cast_to_raw_utf8(text),
+		hFont,
+		&color_wrapper,
+		reinterpret_cast<const lq_rect_t*>(&pos),
+		lq_document_get_user_data(_document)
+	);
 }
 
 const char* lq_document_container::get_default_font_name(void) const noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_default_font_name != nullptr, "get_default_font_name callback must be provided.");
 
-	lq_utf8_str_t fontName = _callbacks.get_default_font_name(_document);
+	lq_utf8_str_t fontName = _callbacks.get_default_font_name(lq_document_get_user_data(_document));
 	LQ_DEBUG_ASSERT(fontName != nullptr, "get_default_font_name callback returned null.");
-	return reinterpret_cast<const char*>(fontName->cstr);
+	return lq_cast_to_cstr(fontName->cstr);
 }
 
 litehtml::pixel_t lq_document_container::get_default_font_size(void) const noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_default_font_size != nullptr, "get_default_font_size callback must be provided.");
-	return _callbacks.get_default_font_size(_document);
+	return _callbacks.get_default_font_size(lq_document_get_user_data(_document));
 }
 
 void lq_document_container::get_media_features(litehtml::media_features& media) const noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_media_features != nullptr, "Media features callback must be provided.");
-	_callbacks.get_media_features(_document, reinterpret_cast<lq_html_media_features_t*>(&media));
-	LQ_STATIC_ASSERT(sizeof(litehtml::media_features) == sizeof(lq_html_media_features_t), WRAPPER_STRUCT_SIZE_MISMATCH);
+	_callbacks.get_media_features(reinterpret_cast<lq_wrapper_media_features_t*>(&media), lq_document_get_user_data(_document));
+	LQ_STATIC_ASSERT(sizeof(litehtml::media_features) == sizeof(lq_wrapper_media_features_t), WRAPPER_STRUCT_SIZE_MISMATCH);
+}
+
+void lq_document_container::get_viewport(litehtml::position& viewport) const
+{
+	LQ_DEBUG_ASSERT(_callbacks.get_viewport != nullptr, "get_viewport callback must be provided.");
+	_callbacks.get_viewport(reinterpret_cast<lq_rect_t*>(&viewport), lq_document_get_user_data(_document));
+	LQ_STATIC_ASSERT(sizeof(litehtml::position) == sizeof(lq_rect_t), WRAPPER_STRUCT_SIZE_MISMATCH);
 }
 
 void lq_document_container::set_caption(const char* caption) noexcept
@@ -60,7 +87,7 @@ void lq_document_container::set_caption(const char* caption) noexcept
 	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, caption) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.set_caption != nullptr, "set_caption callback must be provided.");
 
-	_callbacks.set_caption(_document, reinterpret_cast<const lq_byte_t*>(caption));
+	_callbacks.set_caption(lq_cast_to_raw_utf8(caption), lq_document_get_user_data(_document));
 }
 
 litehtml::pixel_t lq_document_container::text_width(const char* text, litehtml::uint_ptr hFont)
@@ -69,12 +96,7 @@ litehtml::pixel_t lq_document_container::text_width(const char* text, litehtml::
 	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, text) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.calc_text_width != nullptr, "calc_text_width callback must be provided.");
 
-	return _callbacks.calc_text_width(_document, reinterpret_cast<const lq_byte_t*>(text), hFont);
-}
-
-void lq_document_container::draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
-{
-	LQ_DEBUG_ASSERT(false, "draw_text is not implemented yet.");
+	return _callbacks.calc_text_width(lq_cast_to_raw_utf8(text), hFont, lq_document_get_user_data(_document));
 }
 
 litehtml::pixel_t lq_document_container::pt_to_px(float pt) const
@@ -179,11 +201,6 @@ void lq_document_container::del_clip()
 	LQ_DEBUG_ASSERT(false, "del_clip is not implemented yet.");
 }
 
-void lq_document_container::get_viewport(litehtml::position& viewport) const
-{
-	LQ_DEBUG_ASSERT(false, "get_viewport is not implemented yet.");
-}
-
 litehtml::element::ptr lq_document_container::create_element(const char* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc)
 {
 	if (strcmp(tag_name, "script") == 0)
@@ -205,7 +222,7 @@ void lq_document_container::get_language(litehtml::string& language, litehtml::s
 	LQ_DEBUG_ASSERT(false, "get_language is not implemented yet.");
 }
 
-lq_document_t lq_document_create(lq_utf8_str_t html_data, const lq_document_callbacks_t* callbacks, void* user_data)
+lq_document_t lq_document_create(const lq_utf8_str_t html_data, const lq_document_callbacks_t* callbacks, lq_uintptr_t user_data)
 {
 	LQ_DEBUG_ASSERT(html_data != nullptr, "Input data must not be null.");
 
@@ -213,7 +230,7 @@ lq_document_t lq_document_create(lq_utf8_str_t html_data, const lq_document_call
 	doc->container = new lq_document_container(doc, callbacks);
 	doc->user_data = user_data;
 	// Create document base from input HTML string encoded as UTF-8
-	std::string htmlStr((const char*)html_data->cstr, html_data->size);
+	std::string htmlStr(lq_cast_to_cstr(html_data->cstr), html_data->size);
 	doc->base = litehtml::document::createFromString(litehtml::estring(htmlStr, litehtml::encoding::utf_8, litehtml::confidence::certain), doc->container);
 
 	return doc;
@@ -223,35 +240,27 @@ void lq_document_destroy(lq_document_t document)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 
-	for (auto& pair : document->shared_strs)
-	{
-		lq_utf8_str_destroy(pair.second);
-	}
-
 	// Destroy document base before container, as document base may call back into container during destruction.
 	lq_document_container* container = document->container;
 	delete document;
 	delete container;
 }
 
-void* lq_document_get_user_data(lq_document_t document)
+lq_uintptr_t lq_document_get_user_data(const lq_document_t document)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 	return document->user_data;
 }
 
-lq_utf8_str_t lq_document_get_shared_str(lq_document_t document, const lq_char_t* cstr)
+lq_pixel_t lq_document_calc_layout(lq_document_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
-	LQ_DEBUG_ASSERT(cstr != nullptr, "Input C-string must not be null.");
+	return document->base->render(max_width, static_cast<litehtml::render_type>(render_type));
+}
 
-	auto pairIter = document->shared_strs.find(cstr);
-	if (pairIter != document->shared_strs.end())
-	{
-		return pairIter->second;
-	}
-
-	lq_utf8_str_t utf8Str = lq_utf8_str_create(cstr);
-	document->shared_strs.emplace(cstr, utf8Str);
-	return utf8Str;
+void lq_document_draw(lq_document_t document, lq_uintptr_t hdc, lq_pixel_t x, lq_pixel_t y, const lq_rect_t* clip)
+{
+	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
+	document->base->draw(hdc, x, y, reinterpret_cast<const litehtml::position*>(clip));
+	LQ_STATIC_ASSERT(sizeof(lq_rect_t) == sizeof(litehtml::position), WRAPPER_STRUCT_SIZE_MISMATCH);
 }

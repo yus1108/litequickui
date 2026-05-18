@@ -24,6 +24,7 @@ private:
 	virtual const char*       get_default_font_name(void) const noexcept override;
 	virtual litehtml::pixel_t get_default_font_size(void) const noexcept override;
 	virtual void              get_media_features(litehtml::media_features& media) const noexcept override;
+	virtual void              get_viewport(litehtml::position& viewport) const override;
 
 	virtual void set_caption(const char* caption) noexcept override;
 
@@ -49,7 +50,6 @@ private:
 	virtual void import_css(litehtml::string& text, const litehtml::string& url, litehtml::string& baseurl) override;
 	virtual void set_clip(const litehtml::position& pos, const litehtml::border_radiuses& bdr_radius) override;
 	virtual void del_clip() override;
-	virtual void get_viewport(litehtml::position& viewport) const override;
 	virtual litehtml::element::ptr create_element(const char* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc) override;
 	virtual void get_language(litehtml::string& language, litehtml::string& culture) const override;
 
@@ -60,10 +60,7 @@ private:
 
 typedef struct lq_document
 {
-	std::unordered_map<std::string, lq_utf8_str_t> shared_strs;
 	litehtml::document::ptr base;
 	lq_document_container*  container;
-	void*       user_data;
+	lq_uintptr_t user_data;
 } *lq_document_t;
-
-lq_utf8_str_t lq_document_get_shared_str(lq_document_t document, const lq_char_t* cstr);
