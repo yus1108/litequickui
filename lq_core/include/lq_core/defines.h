@@ -1,6 +1,52 @@
 #pragma once
 
 // MACRO DEFINITIONS
+#if defined(NULL)
+	#if defined(__cplusplus)
+		#define NULL 0
+	#else
+		#define NULL ((void *)0)
+	#endif
+#endif
+
+typedef char lq_char_t;
+
+#if defined(_WIN32) || defined(_WIN64)
+	#if defined(LQ_STATIC)
+		#define LQ_CORE_API
+	#elif defined(LQ_CORE_EXPORTS)
+		#define LQ_CORE_API __declspec(dllexport)
+	#else
+		#define LQ_CORE_API __declspec(dllimport)
+	#endif
+
+	typedef __int8 lq_bool_t;
+	#define lq_false 0
+	#define lq_true  1
+
+	typedef unsigned __int8 lq_byte_t;
+
+	typedef __int8  lq_int8_t;
+	typedef __int16 lq_int16_t;
+	typedef __int32 lq_int32_t;
+	typedef __int64 lq_int64_t;
+
+	typedef unsigned __int8  lq_uint8_t;
+	typedef unsigned __int16 lq_uint16_t;
+	typedef unsigned __int32 lq_uint32_t;
+	typedef unsigned __int64 lq_uint64_t;
+
+	#if defined(_WIN64)
+		typedef unsigned __int64 lq_uintptr_t;
+	#else
+		typedef unsigned __int32 lq_uintptr_t;
+	#endif
+
+#else
+	#define LQ_CORE_API
+	#error "Must define platform specific types for non-Windows platforms."
+#endif
+
 #define __LQ_WTEXT(x) L##x
 #define LQ_WTEXT(x) __LQ_WTEXT(x)
 
@@ -25,5 +71,5 @@
 LQ_DEBUG_ONLY(constexpr const size_t LQ_INTERNAL_ENUM_COUNT = __COUNTER__ - 1 - LQ_INTERNAL_ENUM_BEGIN;) \
 LQ_DEBUG_ONLY(static_assert(LQ_INTERNAL_ENUM_COUNT == static_cast<size_t>(_EnumType::COUNT), _ErrorMessage); })
 
-void lq_debug_print_format_string(const char* file, unsigned int line, const char* format, ...);
-void lq_debug_print_format_wstring(const wchar_t* file, unsigned int line, const wchar_t* format, ...);
+LQ_CORE_API void lq_debug_print_format_string(const char* file, unsigned int line, const char* format, ...);
+LQ_CORE_API void lq_debug_print_format_wstring(const wchar_t* file, unsigned int line, const wchar_t* format, ...);

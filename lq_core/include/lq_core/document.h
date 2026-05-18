@@ -4,21 +4,33 @@
 #include "utf8.h"
 #include "wrapping_types.h"
 
-typedef struct lq_document* lq_document_t;
+typedef struct lq_document *lq_document_t;
+
+// wrapper callbacks of litehtml::document_container virtual functions 
+// to avoid exposing litehtml types in the public API of lq_core. 
+// The document container will call these callbacks to perform necessary operations, 
+// which are required by the litehtml library for rendering the document.
 typedef struct lq_document_callbacks
 {
-	lq_pixel_t(*calc_text_width)(lq_document_t document, const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle);
+	lq_pixel_t(*calc_text_width)(const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data);
 
-	lq_uintptr_t(*create_font)(lq_document_t document, const lq_html_font_description_t* font_desc, lq_html_font_metrics_t* out_metrics);
-	void		(*delete_font)(lq_document_t document, lq_uintptr_t font_handle);
+	lq_uintptr_t(*create_font)(lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document);
+	void        (*delete_font)(lq_uintptr_t font_handle, lq_uintptr_t user_data);
 
-	lq_utf8_str_t(*get_default_font_name)(lq_document_t document);
-	lq_pixel_t   (*get_default_font_size)(lq_document_t document);
-	void         (*get_media_features)(lq_document_t document, lq_html_media_features_t* out_media);
+	void (*draw_text)(lq_uintptr_t hdc, const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle, const lq_color_t* color, const lq_rect_t* quad, lq_uintptr_t user_data);
 
-	void (*set_caption)(lq_document_t document, const lq_byte_t* raw_utf8_caption);
+	lq_utf8_str_t(*get_default_font_name)(lq_uintptr_t user_data);
+	lq_pixel_t   (*get_default_font_size)(lq_uintptr_t user_data);
+	void         (*get_media_features)(lq_wrapper_media_features_t* out_media, lq_uintptr_t user_data);
+	void         (*get_viewport)(lq_rect_t* out_viewport, lq_uintptr_t user_data);
+
+	void (*set_caption)(const lq_byte_t* raw_utf8_caption, lq_uintptr_t user_data);
 } lq_document_callbacks_t;
 
-lq_document_t lq_document_create(lq_utf8_str_t html_data, const lq_document_callbacks_t* callbacks, void* user_data);
-void 	      lq_document_destroy(lq_document_t document);
-void*         lq_document_get_user_data(lq_document_t document);
+LQ_CORE_API lq_document_t lq_document_create(const lq_utf8_str_t html_data, const lq_document_callbacks_t* callbacks, lq_uintptr_t user_data);
+LQ_CORE_API void 	      lq_document_destroy(lq_document_t document);
+
+LQ_CORE_API lq_uintptr_t lq_document_get_user_data(const lq_document_t document);
+
+LQ_CORE_API lq_pixel_t lq_document_calc_layout(lq_document_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type);
+LQ_CORE_API void       lq_document_draw(lq_document_t document, lq_uintptr_t hdc, lq_pixel_t x, lq_pixel_t y, const lq_rect_t* clip);

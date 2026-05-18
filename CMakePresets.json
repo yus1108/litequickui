@@ -10,10 +10,10 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
-        "LITEQUICKUI_BUILD_FULL": "ON",
-        "LITEQUICKUI_BUILD_TEST": "ON",
-        "LITEQUICKUI_TEXT_BACKEND_HB_FT": "ON",
-        "LITEQUICKUI_GRAPHICS_BACKEND_DX12": "ON"
+        "LQ_BUILD_FULL": "ON",
+        "LQ_BUILD_TEST": "ON",
+        "LQ_TEXT_BACKEND_HB_FT": "ON",
+        "LQ_GRAPHICS_BACKEND_DX12": "ON"
       },
       "condition": {
         "type": "equals",
