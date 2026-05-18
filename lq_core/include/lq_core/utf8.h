@@ -13,6 +13,6 @@ typedef struct lq_utf8_str* lq_utf8_str_t;
 
 LQ_CORE_API lq_utf8_str_t    lq_utf8_str_create(const lq_char_t* cstr);
 LQ_CORE_API void             lq_utf8_str_destroy(lq_utf8_str_t str);
-LQ_CORE_API lq_uint32_t      lq_utf8_str_length(const lq_utf8_str_t str);
-LQ_CORE_API lq_uint32_t      lq_utf8_str_size(const lq_utf8_str_t str);
+LQ_CORE_API lq_uint32_t      lq_utf8_str_get_length(const lq_utf8_str_t str);
+LQ_CORE_API lq_uint32_t      lq_utf8_str_get_size(const lq_utf8_str_t str);
 LQ_CORE_API const lq_char_t* lq_utf8_str_get_cstr(const lq_utf8_str_t str);

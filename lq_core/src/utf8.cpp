@@ -96,7 +96,7 @@ void lq_utf8_str_destroy(lq_utf8_str_t str)
 	free(str);
 }
 
-lq_uint32_t lq_utf8_str_length(const lq_utf8_str_t str)
+lq_uint32_t lq_utf8_str_get_length(const lq_utf8_str_t str)
 {
 	LQ_DEBUG_ASSERT(str != NULL, "Input string must not be null.");
 	LQ_DEBUG_ASSERT(str->cstr != NULL, "String cstr must not be null.");
@@ -106,7 +106,7 @@ lq_uint32_t lq_utf8_str_length(const lq_utf8_str_t str)
 	return str->length;
 }
 
-lq_uint32_t lq_utf8_str_size(const lq_utf8_str_t str)
+lq_uint32_t lq_utf8_str_get_size(const lq_utf8_str_t str)
 {
 	LQ_DEBUG_ASSERT(str != NULL, "Input string must not be null.");
 	LQ_DEBUG_ASSERT(str->cstr != NULL, "String cstr must not be null.");

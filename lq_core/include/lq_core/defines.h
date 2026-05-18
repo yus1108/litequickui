@@ -10,6 +10,7 @@
 #endif
 
 typedef char lq_char_t;
+typedef wchar_t lq_wchar_t;
 
 #if defined(_WIN32) || defined(_WIN64)
 	#if defined(LQ_STATIC)
