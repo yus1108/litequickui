@@ -21,7 +21,7 @@
 	#define DETECT_MEMORY_LEAKS(goToLine)
 #endif // _WIN32
 
-int main()
+int main(void)
 {
 	DETECT_MEMORY_LEAKS(-1);
 
@@ -35,7 +35,7 @@ int main()
 	lq_bool_t result = test_lq_document_minimal_implementation();
 	if (result == lq_false)
 	{
-		LQ_ASSERT(false, "lq_document minimal implementation test failed");
+		LQ_ASSERT(lq_false, "lq_document minimal implementation test failed");
 		return -1;
 	}
 
@@ -43,7 +43,7 @@ int main()
 	result = test_win32_api_implmenetation();
 	if (result == lq_false)
 	{
-		LQ_ASSERT(false, "Win32 API implementation test failed");
+		LQ_ASSERT(lq_false, "Win32 API implementation test failed");
 		return -1;
 	}
 #endif

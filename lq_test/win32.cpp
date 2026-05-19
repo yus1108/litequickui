@@ -1,283 +1,131 @@
 ﻿#if defined(_WIN32) || defined(_WIN64)
-	#include "lq_test.h"
+#include "lq_test.h"
 
-	#pragma comment(lib, "Dwmapi.lib")
-	#pragma comment(lib, "imm32.lib")
-	#pragma comment(lib, "windowsapp")
+#include <locale.h>
+#include <stdio.h>
 
-	#include <dwmapi.h>
-	#include <mutex>
-	#include <memory>
-	#include <Windows.h>
-	#include <winrt/Windows.Foundation.Collections.h>
-	#include <winrt/Windows.UI.ViewManagement.h>
+#include <lq_core.h>
 
-	#include <lq_core.h>
+#include "win32_api.h"
 
-	typedef struct win32_app* win32_app_t;
+lq_bool_t test_win32_api_implmenetation(void)
+{
+	setlocale(LC_ALL, ".utf8");
+	win32_set_console_output_cp(65001);
 
-	typedef struct win32_app_callbacks
+	typedef struct win32_app_user_data
 	{
-		void (*create)(win32_app_t app);
-		void (*destroy)(win32_app_t app);
-	} win32_app_callbacks_t;
+		lq_utf8_str_t title;
+		lq_document_t document;
+	} win32_app_user_data_t;
+	win32_app_user_data_t app_data = {};
+	app_data.title = lq_utf8_str_create_cstr("Test Window");
 
-	typedef struct win32_app
-	{
-		HWND hwnd; // Window handle
-		winrt::Windows::UI::ViewManagement::UISettings winrt_ui_viewmanagement_uisettings;
-		winrt::event_token winrt_ui_viewmanagement_eventtokencolorsvaluechanged;
-		lq_uintptr_t user_data; // User data passed during window creation
-		win32_app_callbacks_t callbacks; // Callbacks for window events
-	} *win32_app_t;
-
-	static inline bool winrt_is_light_color(winrt::Windows::UI::Color& clr)
-	{
-		return (((5 * clr.G) + (2 * clr.R) + clr.B) > (8 * 128));
-	}
-
-	static inline LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) noexcept
-	{
-		switch (msg)
+	win32_app_callbacks_t callbacks = {};
+	callbacks.create = [](win32_app_t app)
 		{
-		case WM_CREATE:
-		{
-			LPCREATESTRUCT create_struct = reinterpret_cast<LPCREATESTRUCT>(l_param);
-			win32_app_t app = reinterpret_cast<win32_app_t>(create_struct->lpCreateParams);
-			LQ_DEBUG_ASSERT(app != NULL, "Invalid userdata");
-			LQ_DEBUG_ASSERT(app->hwnd == NULL, "HWND in userdata does not match the created window's HWND");
-			app->hwnd = hwnd;
-
-			SetLastError(0);
-			LONG_PTR lastAddress = SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app));
-			if (lastAddress == 0)
-			{
-				// SetWindowLongPtr function returns non-zero for both returned value and GetLastError() if it's an error.
-				DWORD lastError = GetLastError();
-				if (lastError != 0)
-				{
-					return lastError;
-				}
-			}
-
-			winrt::init_apartment();
-			// Apply proper light/dark theme title bar
-			app->winrt_ui_viewmanagement_uisettings = winrt::Windows::UI::ViewManagement::UISettings();
-			auto foreground = app->winrt_ui_viewmanagement_uisettings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Foreground);
-			BOOL isDarkMode = static_cast<BOOL>(winrt_is_light_color(foreground));
-			::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
-
-			// Add ColorValuesChanged event handler to apply proper light/dark theme title bar
-			app->winrt_ui_viewmanagement_eventtokencolorsvaluechanged = app->winrt_ui_viewmanagement_uisettings.ColorValuesChanged
-			(
-				[hwnd, app](auto&&...)
-				{
-					auto foregroundRevoker = app->winrt_ui_viewmanagement_uisettings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Foreground);
-					BOOL isDarkModeRevoker = static_cast<BOOL>(winrt_is_light_color(foregroundRevoker));
-					::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkModeRevoker, sizeof(isDarkModeRevoker));
-				}
-			);
-
-			LQ_DEBUG_ASSERT(app->callbacks.create != NULL, "on_create callback must be provided");
-			app->callbacks.create(app);
-			break;
-		}
-		case WM_DESTROY:
-		{
-			win32_app_t app = reinterpret_cast<win32_app_t>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-			LQ_DEBUG_ASSERT(app != NULL, "Invalid userdata");
-
-			LQ_DEBUG_ASSERT(app->callbacks.destroy != NULL, "on_destroy callback must be provided");
-			app->callbacks.destroy(app);
-
-			// Remove ColorValuesChanged event handler
-			app->winrt_ui_viewmanagement_uisettings.ColorValuesChanged(app->winrt_ui_viewmanagement_eventtokencolorsvaluechanged);
-			app->hwnd = NULL;
-			PostQuitMessage(0);
-			return 0;
-		}
-		default:
-			return DefWindowProc(hwnd, msg, w_param, l_param);
+			win32_app_user_data_t* appData = (win32_app_user_data_t*)win32_app_get_user_data(app);
+			printf("Window created with title: %s\n", lq_utf8_str_get_cstr(appData->title));
 		};
-		return 0;
-	}
+	callbacks.destroy = [](win32_app_t app)
+		{
+			win32_app_user_data_t* appData = (win32_app_user_data_t*)win32_app_get_user_data(app);
+			printf("Window destroyed with title: %s\n", lq_utf8_str_get_cstr(appData->title));
+		};
 
-	const lq_wchar_t* win32_get_default_class_name(void)
+	win32_app_t app = win32_app_create(app_data.title, (lq_uintptr_t)&app_data, &callbacks, NULL);
+	if (app == NULL) { return lq_false; }
+
+	static const int       BITS_PER_COLOR_CHANNEL         = 8;
+	static const float     DEFAULT_FONT_SIZE              = 16.0f;
+	static const lq_byte_t DEFAULT_FONT_NAME_UTF8_BYTES[] = "Noto Sans";
+
+	typedef struct lq_html_user_data
 	{
-		static const lq_wchar_t* class_name = NULL;
-		static std::mutex mutex;
+		win32_app_t   app;
+		lq_utf8_str_t default_font_name;
+	} lq_html_user_data_t;
+	lq_html_user_data_t html_data = {};
+	html_data.app = app;
+	html_data.default_font_name = lq_utf8_str_create(DEFAULT_FONT_NAME_UTF8_BYTES);
 
-		std::lock_guard<std::mutex> lock(mutex);
-		if (class_name == NULL)
+	lq_document_callbacks_t doc_callbacks = {};
+	doc_callbacks.get_media_features = [](lq_wrapper_media_features_t* out_media, lq_uintptr_t user_data)
 		{
-			class_name = L"Default Window Class";
-			WNDCLASSW wc = {};
-			wc.lpfnWndProc = &WndProc;
-			wc.style = CS_HREDRAW | CS_VREDRAW;
-			wc.cbClsExtra = 0;
-			wc.cbWndExtra = 0;
-			wc.hInstance = GetModuleHandle(NULL);
-			wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-			wc.hbrBackground = NULL;
-			wc.lpszMenuName = NULL;
-			wc.lpszClassName = class_name;
+			lq_pixel2_t monitor_resolution = win32_app_get_monitor_resolution(((lq_html_user_data_t*)user_data)->app);
+			lq_pixel2_t window_size = win32_app_get_window_size(((lq_html_user_data_t*)user_data)->app);
 
-			if (RegisterClassW(&wc) == FALSE)
-			{
-				LQ_DEBUG_ASSERT(false, "Failed to register window class. Error code: %lu", GetLastError());
-				return NULL;
-			}
-		}
-		return class_name;
-	}
+			out_media->resolution = win32_app_get_dpi(((lq_html_user_data_t*)user_data)->app); // The resolution of the output device (in DPI)
 
-	lq_bool_t win32_app_is_valid(win32_app_t app)
+			// litequickui only supports screen media type for now, so we can ignore the distinction between paged and continuous media types for this test.
+			out_media->type = LQ_WRAPPER_MEDIA_TYPE_SCREEN;
+			
+			out_media->width = window_size.x;                // The width of the viewport including the size of a rendered scroll bar (if any).
+			out_media->height = window_size.y;               // The height of the targeted display area of the output device.
+			out_media->device_width = monitor_resolution.x;  // The width of the screen.
+			out_media->device_height = monitor_resolution.y; // The height of the screen.
+
+			out_media->color = BITS_PER_COLOR_CHANNEL; // 8 bits per color channel is more than enough for modern UI rendering.
+			out_media->color_index = 0;                // Assume no color lookup table (i.e. true color display)
+			out_media->monochrome = 0;                 // Assume not a monochrome display
+		};
+	doc_callbacks.set_caption = [](const lq_byte_t* utf8_bytes_caption, lq_uintptr_t user_data)
+		{
+			win32_app_t app = ((lq_html_user_data_t*)user_data)->app;
+			win32_app_set_window_title_utf8_bytes(app, utf8_bytes_caption);
+		};
+	doc_callbacks.get_default_font_size = [](lq_uintptr_t user_data) -> lq_pixel_t
+		{
+			LQ_UNUSED(user_data);
+			return DEFAULT_FONT_SIZE; // Return a default font size of 16 pixels for testing
+		};
+	doc_callbacks.get_default_font_name = [](lq_uintptr_t user_data) -> lq_utf8_str_t
+		{
+			lq_html_user_data_t* htmlUserData = (lq_html_user_data_t*)user_data;
+			return htmlUserData->default_font_name; // Return a default font name for testing
+		};
+	doc_callbacks.create_font = [](lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document) -> lq_uintptr_t
+		{
+			LQ_UNUSED(document);
+			LQ_UNUSED(font_desc);
+			// For testing purposes, we can return a dummy font handle and metrics.
+			out_metrics->ascent = 12.0f;
+			out_metrics->descent = 4.0f;
+			LQ_ASSERT(lq_false, "TODO: Implement create_font callback to create real fonts and calculate real font metrics based on the font description.");
+			return 0; // Dummy font handle
+		};
+	doc_callbacks.delete_font = [](lq_uintptr_t font_handle, lq_uintptr_t user_data)
+		{
+			LQ_UNUSED(font_handle);
+			LQ_UNUSED(user_data);
+			// For testing purposes, we don't need to do anything here since we are not actually creating real fonts.
+			LQ_ASSERT(lq_false, "TODO: Implement delete_font callback to delete real fonts created in the create_font callback.");
+		};
+	doc_callbacks.calc_text_width = [](const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
+		{
+			LQ_UNUSED(font_handle);
+			LQ_UNUSED(user_data);
+			lq_uint32_t utf8_text_length, utf8_text_size;
+			lq_inspect_raw_utf8(&utf8_text_length, &utf8_text_size, raw_utf8_text);
+			LQ_ASSERT(lq_false, "TODO: Implement calc_text_width callback to calculate real text width based on the font metrics and the actual text content.");
+			return static_cast<lq_pixel_t>(utf8_text_length * 8); // Assume each character is 8 pixels wide for testing
+		};
+
+	lq_utf8_str_t html_str = lq_utf8_str_create_cstr("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Test Document</title></head><body><h1>Hello, World!</h1></body></html>");
+	app_data.document = lq_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
+	lq_utf8_str_destroy(html_str);
+
+	win32_app_show(app);
+
+	while (win32_app_update(app))
 	{
-		return (app != NULL) && (app->hwnd != NULL);
 	}
 
-	win32_app_t win32_app_create(lq_utf8_str_t title, lq_uintptr_t user_data, const win32_app_callbacks_t* callbacks, const lq_rect_t* rect)
-	{
-		const lq_wchar_t* class_name = win32_get_default_class_name();
-		if (class_name == NULL) { return NULL; }
+	lq_document_destroy(app_data.document);
+	lq_utf8_str_destroy(html_data.default_font_name);
 
-		win32_app_t app = new struct win32_app;
-		if (app == NULL)
-		{
-			LQ_DEBUG_ASSERT(false, "Failed to allocate memory for win32_app struct.");
-			return NULL;
-		}
-		app->user_data = user_data;
-		app->callbacks = *callbacks;
-		app->hwnd = NULL;
-
-		const lq_char_t* title_cstr = lq_utf8_str_get_cstr(title);
-		lq_int32_t wchar_count = MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, NULL, 0);
-		std::unique_ptr<wchar_t[]> title_wstr = std::make_unique<wchar_t[]>(wchar_count);
-		MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, title_wstr.get(), wchar_count);
-
-		int x, y, width, height;
-		if (rect != NULL)
-		{
-			x = static_cast<int>(roundf(rect->x));
-			y = static_cast<int>(roundf(rect->y));
-			width = static_cast<int>(roundf(rect->width));
-			height = static_cast<int>(roundf(rect->height));
-		}
-		else
-		{
-			x = CW_USEDEFAULT;
-			y = 0;
-			width = CW_USEDEFAULT;
-			height = 0;
-		}
-
-		CreateWindowExW(0, class_name, title_wstr.get(), 0, x, y, width, height, NULL, NULL, GetModuleHandle(NULL), (LPVOID)app);
-		if (!app->hwnd) {
-			MessageBoxW(NULL, L"CreateWindowExW 실패", L"Error", MB_OK);
-			return NULL;
-		}
-
-		if (SetWindowLong(app->hwnd, GWL_STYLE, WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME) == 0)
-		{
-			LQ_DEBUG_ASSERT(false, "Failed to set window style. Error code: %lu", GetLastError());
-			DestroyWindow(app->hwnd);
-			delete app;
-			return NULL;
-		}
-
-		if (UpdateWindow(app->hwnd) == FALSE)
-		{
-			LQ_DEBUG_ASSERT(false, "Failed to update window. Error code: %lu", GetLastError());
-			DestroyWindow(app->hwnd);
-			delete app;
-			return NULL;
-		}
-
-		return app;
-	}
-
-	void win32_app_destroy(win32_app_t app)
-	{
-		LQ_DEBUG_ASSERT(app != NULL, "Input app must not be null.");
-		if (win32_app_is_valid(app)) { DestroyWindow(app->hwnd); }
-		delete app;
-	}
-
-	lq_uintptr_t win32_app_get_user_data(win32_app_t app)
-	{
-		LQ_DEBUG_ASSERT(win32_app_is_valid(app), "Input app must be valid.");
-		return app->user_data;
-	}
-
-	lq_bool_t win32_app_show(win32_app_t app)
-	{
-		LQ_DEBUG_ASSERT(win32_app_is_valid(app), "Input app must be valid.");
-		ShowWindow(app->hwnd, SW_SHOW);
-		return lq_true;
-	}
-
-	lq_bool_t win32_app_update(win32_app_t app)
-	{
-		LQ_DEBUG_ASSERT(win32_app_is_valid(app), "Input app must be valid.");
-
-		MSG msg;
-		while (TRUE == PeekMessage(&msg, app->hwnd, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		return win32_app_is_valid(app);
-	}
-
-	lq_bool_t test_win32_api_implmenetation()
-	{
-		typedef struct win32_app_user_data
-		{
-			lq_utf8_str_t title;
-		} win32_app_user_data_t;
-		win32_app_user_data_t app_data = {};
-		app_data.title = lq_utf8_str_create("한글 윈도우");
-
-		win32_app_callbacks_t callbacks = {};
-		callbacks.create = [](win32_app_t app)
-			{
-				win32_app_user_data_t* appData = (win32_app_user_data_t*)win32_app_get_user_data(app);
-
-				const lq_char_t* title_cstr = lq_utf8_str_get_cstr(appData->title);
-				lq_int32_t wchar_count = MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, NULL, 0);
-				lq_wchar_t* title_wcstr = (wchar_t*)malloc(sizeof(wchar_t) * wchar_count);
-				MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, title_wcstr, wchar_count);
-				OutputDebugStringW(title_wcstr);
-				free(title_wcstr);
-				OutputDebugStringA(" Window created.\n");
-			};
-		callbacks.destroy = [](win32_app_t app)
-			{
-				win32_app_user_data_t* appData = (win32_app_user_data_t*)win32_app_get_user_data(app);
-
-				const lq_char_t* title_cstr = lq_utf8_str_get_cstr(appData->title);
-				lq_int32_t wchar_count = MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, NULL, 0);
-				lq_wchar_t* title_wcstr = (wchar_t*)malloc(sizeof(wchar_t) * wchar_count);
-				MultiByteToWideChar(CP_UTF8, 0, title_cstr, -1, title_wcstr, wchar_count);
-				OutputDebugStringW(title_wcstr);
-				free(title_wcstr);
-				OutputDebugStringA(" Window destroyed.\n");
-			};
-
-		win32_app_t app = win32_app_create(app_data.title, (lq_uintptr_t)&app_data, &callbacks, NULL);
-		if (app == NULL) { return lq_false; }
-
-		win32_app_show(app);
-
-		while (win32_app_update(app))
-		{
-		}
-	
-		win32_app_destroy(app);
-		lq_utf8_str_destroy(app_data.title);
-		return lq_true;
-	}
+	win32_app_destroy(app);
+	lq_utf8_str_destroy(app_data.title);
+	return lq_true;
+}
 #endif

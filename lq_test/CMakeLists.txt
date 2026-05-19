@@ -8,7 +8,12 @@ set(LQ_TEXT_SRC
 
 # platform-specific source files
 if(WIN32)
-    list(APPEND LQ_TEXT_SRC "win32.cpp")
+    list(APPEND LQ_TEXT_SRC 
+        "win32_api.cpp"
+        "win32_api.h"
+        "win32_api.hpp"
+        "win32.cpp"
+    )
 endif()
 
 add_executable(lq_test ${LQ_TEXT_SRC} "lq_test.h")
