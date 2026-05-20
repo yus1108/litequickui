@@ -127,70 +127,13 @@ endif()
 
 add_subdirectory(external/litehtml)
 add_subdirectory(external/quickjs)
+if(LQ_TEXT_BACKEND_HB_FT)
+	add_subdirectory(external/freetype)
+	set(HB_HAVE_FREETYPE ON CACHE BOOL "" FORCE)
+	add_subdirectory(external/harfbuzz)
+endif()
 
 add_subdirectory(lq_core)
 if(LQ_BUILD_TEST)
 	add_subdirectory(lq_test)
 endif()
-
-#if(LQ_ENABLE_FREETYPE)
-#    add_subdirectory(external/freetype)
-#    target_link_libraries(${PROJECT_NAME} PRIVATE freetype)
-#    target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_USE_FREETYPE)
-#endif()
-# 
-# if(LQ_ENABLE_HARFBUZZ)
-#     add_subdirectory(external/harfbuzz)
-#     target_link_libraries(${PROJECT_NAME} PRIVATE harfbuzz)
-#     target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_USE_HARFBUZZ)
-# endif()
-# 
-# if(WIN32)
-#     if(LQ_BACKEND_D2D)
-#         target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_BACKEND_D2D)
-#         target_link_libraries(${PROJECT_NAME} PRIVATE d2d1 dwrite)
-#     elseif(LQ_BACKEND_DX12)
-#         target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_BACKEND_DX12)
-#         target_link_libraries(${PROJECT_NAME} PRIVATE dx12)
-#     endif()
-# endif()
-# 
-# if(APPLE)
-#     if(LQ_BACKEND_METAL)
-#         target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_BACKEND_METAL)
-#         find_library(METAL Metal)
-#         find_library(QUARTZ QuartzCore)
-#         target_link_libraries(${PROJECT_NAME} PRIVATE ${METAL} ${QUARTZ})
-#     endif()
-# endif()
-# 
-# if(UNIX AND NOT APPLE)
-#     if(LQ_BACKEND_GL)
-#         find_package(Cairo REQUIRED)
-#         target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
-#         target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_BACKEND_GL)
-#     endif()
-# 
-#     if(LQ_BACKEND_VULKAN)
-#         find_package(OpenGL REQUIRED)
-#         target_compile_definitions(${PROJECT_NAME} PRIVATE LQ_BACKEND_VULKAN)
-#     endif()
-# endif()
-# 
-# if(LQU_BACKEND_D2D)
-#     target_sources(${PROJECT_NAME} PRIVATE src/backend/d2d/d2d_renderer.cpp)
-# endif()
-
-
-#target_include_directories(${PROJECT_NAME}
-#    PRIVATE
-#        ${CMAKE_CURRENT_SOURCE_DIR}/include
-#		${CMAKE_CURRENT_SOURCE_DIR}/external/litehtml/include
-#		${CMAKE_CURRENT_SOURCE_DIR}/external/quickjs
-#)
-#
-#target_link_libraries(${PROJECT_NAME}
-#    PRIVATE
-#        litehtml
-#		qjs
-#)
