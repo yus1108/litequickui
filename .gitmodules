@@ -4,3 +4,9 @@
 [submodule "external/quickjs"]
 	path = external/quickjs
 	url = https://github.com/yus1108/quickjs.git
+[submodule "external/freetype"]
+	path = external/freetype
+	url = https://github.com/yus1108/freetype.git
+[submodule "external/harfbuzz"]
+	path = external/harfbuzz
+	url = https://github.com/yus1108/harfbuzz.git
