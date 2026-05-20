@@ -1,5 +1,4 @@
 #pragma once
-
 #include "lq_core/document.h"
 
 #include <unordered_map>

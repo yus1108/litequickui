@@ -1,5 +1,4 @@
 #pragma once
-
 #include "lq_core/utf8.h"
 
 #include "lq_core/defines.h"

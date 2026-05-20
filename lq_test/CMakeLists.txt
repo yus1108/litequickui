@@ -23,12 +23,11 @@ set_property(TARGET lq_test PROPERTY
     C_STANDARD 99
 )
 
+# TODO: freetype & harfbuzz should be removed from here and added to lq_hb_ft
 target_link_libraries(lq_test PRIVATE
     lq_core
-)
-
-target_include_directories(lq_test PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    freetype
+    harfbuzz
 )
 
 if(WIN32)

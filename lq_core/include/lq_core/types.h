@@ -38,6 +38,20 @@ typedef void* lq_ptr_t;
 typedef float lq_float_t;
 typedef float lq_pixel_t;
 
+typedef struct lq_uint16x2
+{
+	lq_uint16_t x;
+	lq_uint16_t y;
+} lq_uint16x2_t;
+
+LQ_CORE_API static inline lq_uint16x2_t lq_uint16x2_create(lq_uint16_t x, lq_uint16_t y)
+{
+	lq_uint16x2_t vec;
+	vec.x = x;
+	vec.y = y;
+	return vec;
+}
+
 typedef struct lq_pixel2
 {
 	lq_pixel_t x;
