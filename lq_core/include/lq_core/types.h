@@ -8,14 +8,6 @@ typedef wchar_t lq_wchar_t;
 typedef void* lq_ptr_t;
 
 #if defined(_WIN32) || defined(_WIN64)
-	#if defined(LQ_STATIC)
-		#define LQ_CORE_API
-	#elif defined(LQ_CORE_EXPORTS)
-		#define LQ_CORE_API __declspec(dllexport)
-	#else
-		#define LQ_CORE_API __declspec(dllimport)
-	#endif
-
 	typedef __int8 lq_bool_t;
 	#define lq_false 0
 	#define lq_true  1

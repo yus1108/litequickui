@@ -10,7 +10,7 @@
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-	#if defined(LQ_STATIC)
+	#if defined(LQ_CORE_STATIC)
 		#define LQ_CORE_API
 	#elif defined(LQ_CORE_EXPORTS)
 		#define LQ_CORE_API __declspec(dllexport)
