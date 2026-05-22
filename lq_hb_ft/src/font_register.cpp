@@ -41,8 +41,9 @@ void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq
 	FT_Face face = nullptr;
 	LQ_DEBUG_ONLY(FT_Error err = )FT_New_Face(font_register->lib, path_cstr, -1, &face);
 	LQ_DEBUG_ASSERT(err == 0, "Failed to read font file: %s", path_cstr);
-
 	const FT_Long face_count = face->num_faces;
+	FT_Done_Face(face);
+
 	for (FT_Long i = 0; i < face_count; ++i)
 	{
 		LQ_DEBUG_ONLY(err = )FT_New_Face(font_register->lib, path_cstr, 0, &face);
