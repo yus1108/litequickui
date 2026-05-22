@@ -1,5 +1,5 @@
 #pragma once
-#include "lq_core/utf8.h"
+#include "lq_core/string.h"
 
 #include "lq_core/defines.h"
 
@@ -16,7 +16,7 @@ typedef struct lq_utf8
 
 typedef struct lq_utf8_str
 {
-	lq_byte_t*  cstr;
+	lq_byte_t*  bytes;
 	lq_uint32_t length;
 	lq_uint32_t size;
 } *lq_utf8_str_t;

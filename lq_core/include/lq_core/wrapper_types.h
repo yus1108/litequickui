@@ -67,7 +67,7 @@ typedef struct lq_wrapper_css_length
 	bool is_predefined;
 } lq_wrapper_css_length_t;
 
-LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create(void)
+static inline lq_wrapper_css_length_t lq_wrapper_css_length_create(void)
 {
 	lq_wrapper_css_length_t len;
 	len.value = 0;
@@ -76,7 +76,7 @@ LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create(v
 	return len;
 }
 
-LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_value(lq_float_t value, lq_wrapper_css_length_units units)
+static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_value(lq_float_t value, lq_wrapper_css_length_units units)
 {
 	lq_wrapper_css_length_t len;
 	len.value = value;
@@ -85,7 +85,7 @@ LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_v
 	return len;
 }
 
-LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_predef(lq_uint32_t predef)
+static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_predef(lq_uint32_t predef)
 {
 	lq_wrapper_css_length_t len;
 	len.predef = predef;
@@ -94,7 +94,7 @@ LQ_CORE_API static inline lq_wrapper_css_length_t lq_wrapper_css_length_create_p
 	return len;
 }
 
-LQ_CORE_API static inline void lq_wrapper_css_length_set_value(lq_wrapper_css_length_t* out, lq_float_t value, lq_wrapper_css_length_units units)
+static inline void lq_wrapper_css_length_set_value(lq_wrapper_css_length_t* out, lq_float_t value, lq_wrapper_css_length_units units)
 {
 	LQ_DEBUG_ASSERT(out != nullptr, "Output length must not be null.");
 	out->value = value;
@@ -102,7 +102,7 @@ LQ_CORE_API static inline void lq_wrapper_css_length_set_value(lq_wrapper_css_le
 	out->is_predefined = false;
 }
 
-LQ_CORE_API static inline lq_float_t lq_wrapper_css_length_get_value(const lq_wrapper_css_length_t* in)
+static inline lq_float_t lq_wrapper_css_length_get_value(const lq_wrapper_css_length_t* in)
 {
 	LQ_DEBUG_ASSERT(in != nullptr, "Input length must not be null.");
 	LQ_DEBUG_ASSERT(in->is_predefined == false, "Input length must not be a predefined value.");
@@ -113,7 +113,7 @@ LQ_CORE_API static inline lq_float_t lq_wrapper_css_length_get_value(const lq_wr
 	return 0;
 }
 
-LQ_CORE_API static inline lq_wrapper_css_length_units lq_wrapper_css_length_get_units(const lq_wrapper_css_length_t* in)
+static inline lq_wrapper_css_length_units lq_wrapper_css_length_get_units(const lq_wrapper_css_length_t* in)
 {
 	LQ_DEBUG_ASSERT(in != nullptr, "Input length must not be null.");
 	LQ_DEBUG_ASSERT(in->is_predefined == false, "Input length must not be a predefined value.");
@@ -124,7 +124,7 @@ LQ_CORE_API static inline lq_wrapper_css_length_units lq_wrapper_css_length_get_
 	return LQ_WRAPPER_CSS_LENGTH_UNITS_NONE;
 }
 
-LQ_CORE_API static inline void lq_wrapper_css_length_set_predef(lq_wrapper_css_length_t* out, lq_uint32_t predef)
+static inline void lq_wrapper_css_length_set_predef(lq_wrapper_css_length_t* out, lq_uint32_t predef)
 {
 	LQ_DEBUG_ASSERT(out != nullptr, "Output length must not be null.");
 	out->predef = predef;
@@ -132,7 +132,7 @@ LQ_CORE_API static inline void lq_wrapper_css_length_set_predef(lq_wrapper_css_l
 	out->is_predefined = true;
 }
 
-LQ_CORE_API static inline lq_uint32_t lq_wrapper_css_length_get_predef(const lq_wrapper_css_length_t* in)
+static inline lq_uint32_t lq_wrapper_css_length_get_predef(const lq_wrapper_css_length_t* in)
 {
 	LQ_DEBUG_ASSERT(in != nullptr, "Input length must not be null.");
 	LQ_DEBUG_ASSERT(in->is_predefined == true, "Input length must be a predefined value.");
@@ -143,9 +143,9 @@ LQ_CORE_API static inline lq_uint32_t lq_wrapper_css_length_get_predef(const lq_
 	return 0;
 }
 
-LQ_CORE_API static inline lq_bool_t lq_wrapper_css_length_is_predef(const lq_wrapper_css_length_t* in) { return in->is_predefined; }
+static inline lq_bool_t lq_wrapper_css_length_is_predef(const lq_wrapper_css_length_t* in) { return in->is_predefined; }
 
-LQ_CORE_API static inline lq_pixel_t lq_wrapper_css_length_calc_percent(const lq_wrapper_css_length_t* in, lq_pixel_t width)
+static inline lq_pixel_t lq_wrapper_css_length_calc_percent(const lq_wrapper_css_length_t* in, lq_pixel_t width)
 {
 	LQ_DEBUG_ASSERT(in != nullptr, "Input length must not be null.");
 	LQ_DEBUG_ASSERT(in->is_predefined == false, "Input length must not be a predefined value.");
@@ -195,17 +195,17 @@ typedef enum lq_wrapper_text_emphasis_position
 // wrapper struct for litehtml::font_description
 typedef struct lq_wrapper_font_description
 {
-	const lq_char_t*      raw_utf8_family; // Font Family
-	lq_pixel_t            size;            // Font size
-	lq_wrapper_font_style style;           // Font style, see the enum lq_font_style
-	lq_uint32_t           weight;          // Font weight.
-	lq_uint32_t                      decoration_line;      // Decoration line. A bitset of flags of the enum lq_html_text_decoration_line
-	lq_wrapper_css_length_t          decoration_thickness; // Decoration line thickness in pixels. See predefined values in enumtext_decoration_thickness
-	lq_wrapper_text_decoration_style decoration_style;     // Decoration line style. See enum text_decoration_style
+	const lq_byte_t*      utf8_family; // Font Family
+	lq_pixel_t            size;        // Font size
+	lq_wrapper_font_style style;       // Font style, see the enum lq_font_style
+	lq_uint32_t           weight;      // Font weight.
+	lq_uint32_t                      decoration_line;      // Decoration line. A bitset of flags of the enum lq_wrapper_text_decoration_line
+	lq_wrapper_css_length_t          decoration_thickness; // Decoration line thickness in pixels. See predefined values in enum lq_wrapper_css_length_units
+	lq_wrapper_text_decoration_style decoration_style;     // Decoration line style. See enum lq_wrapper_text_decoration_style
 	lq_color_t                       decoration_color;     // Decoration line color
-	const lq_char_t* raw_utf8_emphasis_style; // Text emphasis style
-	lq_color_t       emphasis_color;          // Text emphasis color
-	lq_int32_t       emphasis_position;       // Text emphasis position, a bitset of flags of the enum lq_html_text_emphasis_position
+	const lq_byte_t* utf8_emphasis_style; // Text emphasis style
+	lq_color_t       emphasis_color;      // Text emphasis color
+	lq_int32_t       emphasis_position;   // Text emphasis position, a bitset of flags of the enum lq_wrapper_text_emphasis_position
 } lq_wrapper_font_description_t;
 
 // wrapper struct for litehtml::font_metrics
@@ -222,7 +222,7 @@ typedef struct lq_wrapper_font_metrics
 	lq_pixel_t super_shift = 0; // The baseline shift for superscripts.
 } lq_wrapper_font_metrics_t;
 
-LQ_CORE_API static inline lq_pixel_t lq_wrapper_font_metrics_base_line(const lq_wrapper_font_metrics_t* metrics)
+static inline lq_pixel_t lq_wrapper_font_metrics_base_line(const lq_wrapper_font_metrics_t* metrics)
 {
 	LQ_DEBUG_ASSERT(metrics != nullptr, "Input font metrics must not be null.");
 	return metrics->descent;
@@ -234,6 +234,6 @@ typedef enum lq_wrapper_render_type
 	LQ_WRAPPER_RENDER_TYPE_ALL,
 	LQ_WRAPPER_RENDER_TYPE_NO_FIXED,
 	LQ_WRAPPER_RENDER_TYPE_ONLY_FIXED,
-} lq_wrapper_render_type;
+} lq_wrapper_render_type_t;
 
 typedef lq_uintptr_t lq_wrapper_document_t;

@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <lq_core.h>
+#include <lq_hb_ft.h>
 
 #include "win32_api.h"
 
@@ -15,11 +16,16 @@ lq_bool_t test_win32_api_implmenetation(void)
 
 	typedef struct win32_app_user_data
 	{
+		lq_utf8_str_t families[1];
+		lq_utf8_str_t font_paths[1];
 		lq_utf8_str_t title;
-		lq_document_t document;
+		lq_core_doument_t document;
+		lq_core_font_register_interface_t font_register;
 	} win32_app_user_data_t;
 	win32_app_user_data_t app_data = {};
 	app_data.title = lq_utf8_str_create_cstr("Test Window");
+	app_data.families[0] = lq_utf8_str_create_cstr("Noto Sans");
+	app_data.font_paths[0] = lq_utf8_str_create_cstr("fonts/noto_sans/static/NotoSans-Regular.ttf");
 
 	win32_app_callbacks_t callbacks = {};
 	callbacks.create = [](win32_app_t app)
@@ -36,6 +42,10 @@ lq_bool_t test_win32_api_implmenetation(void)
 	win32_app_t app = win32_app_create(app_data.title, (lq_uintptr_t)&app_data, &callbacks, NULL);
 	if (app == NULL) { return lq_false; }
 
+	app_data.font_register = lq_core_font_register_interface_bind_hb_ft(lq_hb_ft_font_register_create(10, 100)); // Create a font register with an initial capacity for 16 font families and 16 font instances for testing
+
+	app_data.font_register.add(app_data.font_register.ctx, app_data.font_paths[0], app_data.families[0]); // Register a common system font for testing
+
 	static const int       BITS_PER_COLOR_CHANNEL         = 8;
 	static const float     DEFAULT_FONT_SIZE              = 16.0f;
 	static const lq_byte_t DEFAULT_FONT_NAME_UTF8_BYTES[] = "Noto Sans";
@@ -49,7 +59,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	html_data.app = app;
 	html_data.default_font_name = lq_utf8_str_create(DEFAULT_FONT_NAME_UTF8_BYTES);
 
-	lq_document_callbacks_t doc_callbacks = {};
+	lq_core_doument_callbacks_t doc_callbacks = {};
 	doc_callbacks.get_media_features = [](lq_wrapper_media_features_t* out_media, lq_uintptr_t user_data)
 		{
 			lq_pixel2_t monitor_resolution = win32_app_get_monitor_resolution(((lq_html_user_data_t*)user_data)->app);
@@ -69,10 +79,10 @@ lq_bool_t test_win32_api_implmenetation(void)
 			out_media->color_index = 0;                // Assume no color lookup table (i.e. true color display)
 			out_media->monochrome = 0;                 // Assume not a monochrome display
 		};
-	doc_callbacks.set_caption = [](const lq_byte_t* utf8_bytes_caption, lq_uintptr_t user_data)
+	doc_callbacks.set_caption = [](const lq_byte_t* utf8_caption, lq_uintptr_t user_data)
 		{
 			win32_app_t app = ((lq_html_user_data_t*)user_data)->app;
-			win32_app_set_window_title_utf8_bytes(app, utf8_bytes_caption);
+			win32_app_set_window_title_utf8_bytes(app, utf8_caption);
 		};
 	doc_callbacks.get_default_font_size = [](lq_uintptr_t user_data) -> lq_pixel_t
 		{
@@ -101,18 +111,18 @@ lq_bool_t test_win32_api_implmenetation(void)
 			// For testing purposes, we don't need to do anything here since we are not actually creating real fonts.
 			LQ_ASSERT(lq_false, "TODO: Implement delete_font callback to delete real fonts created in the create_font callback.");
 		};
-	doc_callbacks.calc_text_width = [](const lq_byte_t* raw_utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
+	doc_callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
 		{
 			LQ_UNUSED(font_handle);
 			LQ_UNUSED(user_data);
 			lq_uint32_t utf8_text_length, utf8_text_size;
-			lq_inspect_raw_utf8(&utf8_text_length, &utf8_text_size, raw_utf8_text);
+			lq_inspect_utf8_bytes(&utf8_text_length, &utf8_text_size, utf8_text);
 			LQ_ASSERT(lq_false, "TODO: Implement calc_text_width callback to calculate real text width based on the font metrics and the actual text content.");
 			return static_cast<lq_pixel_t>(utf8_text_length * 8); // Assume each character is 8 pixels wide for testing
 		};
 
 	lq_utf8_str_t html_str = lq_utf8_str_create_cstr("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Test Document</title></head><body><h1>Hello, World!</h1></body></html>");
-	app_data.document = lq_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
+	app_data.document = lq_core_doument_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
 	lq_utf8_str_destroy(html_str);
 
 	win32_app_show(app);
@@ -121,11 +131,12 @@ lq_bool_t test_win32_api_implmenetation(void)
 	{
 	}
 
-	lq_document_destroy(app_data.document);
+	lq_core_doument_destroy(app_data.document);
 	lq_utf8_str_destroy(html_data.default_font_name);
 
 	win32_app_destroy(app);
 	lq_utf8_str_destroy(app_data.title);
+	lq_hb_ft_font_register_destroy((lq_hb_ft_font_register_t)app_data.font_register.ctx);
 	return lq_true;
 }
 #endif

@@ -31,7 +31,7 @@ typedef void* lq_ptr_t;
 	#endif
 
 #else
-	#define LQ_CORE_API
+	#define LQ_API
 	#error "Must define platform specific types for non-Windows platforms."
 #endif
 
@@ -44,7 +44,7 @@ typedef struct lq_uint16x2
 	lq_uint16_t y;
 } lq_uint16x2_t;
 
-LQ_CORE_API static inline lq_uint16x2_t lq_uint16x2_create(lq_uint16_t x, lq_uint16_t y)
+static inline lq_uint16x2_t lq_uint16x2_create(lq_uint16_t x, lq_uint16_t y)
 {
 	lq_uint16x2_t vec;
 	vec.x = x;
@@ -58,7 +58,7 @@ typedef struct lq_pixel2
 	lq_pixel_t y;
 } lq_pixel2_t;
 
-LQ_CORE_API static inline lq_pixel2_t lq_pixel2_create(lq_pixel_t x, lq_pixel_t y)
+static inline lq_pixel2_t lq_pixel2_create(lq_pixel_t x, lq_pixel_t y)
 {
 	lq_pixel2_t vec;
 	vec.x = x;
@@ -81,7 +81,7 @@ typedef struct lq_color
 	} u;
 } lq_color_t;
 
-LQ_CORE_API static inline lq_color_t lq_color_create(lq_byte_t r, lq_byte_t g, lq_byte_t b, lq_byte_t a)
+static inline lq_color_t lq_color_create(lq_byte_t r, lq_byte_t g, lq_byte_t b, lq_byte_t a)
 {
 	lq_color_t color;
 	color.u.comp.r = r;
@@ -99,7 +99,7 @@ typedef struct lq_rect
 	lq_pixel_t height;
 } lq_rect_t;
 
-LQ_CORE_API static inline lq_rect_t lq_rect_create(lq_pixel_t x, lq_pixel_t y, lq_pixel_t width, lq_pixel_t height)
+static inline lq_rect_t lq_rect_create(lq_pixel_t x, lq_pixel_t y, lq_pixel_t width, lq_pixel_t height)
 {
 	lq_rect_t rect;
 	rect.x = x;

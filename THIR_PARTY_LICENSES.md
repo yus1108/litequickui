@@ -20,7 +20,7 @@ or distribution package.
 License: external/harfbuzz/COPYING
 
 ## Noto Sans (SIL Open Font License 1.1)
-License: external/fonts/noto_sans/OFL.txt
+License: assets/fonts/noto_sans/OFL.txt
 
 Note: Noto Sans is licensed under the SIL Open Font License 1.1,  
 which permits embedding, modification, and redistribution under specific conditions.  

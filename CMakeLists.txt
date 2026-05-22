@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.20)
-project(litequickui LANGUAGES C CXX)
+project(litequickui_project LANGUAGES C CXX)
 
 # global options
 option(BUILD_SHARED_LIBS "Build LiteQuickUI as a shared library" OFF)
@@ -136,6 +136,9 @@ endif()
 add_subdirectory(lq_core)
 if(LQ_TEXT_BACKEND_HB_FT)
 	add_subdirectory(lq_hb_ft)
+endif()
+if(LQ_BUILD_FULL)
+	add_subdirectory(litequickui)
 endif()
 if(LQ_BUILD_TEST)
 	add_subdirectory(lq_test)

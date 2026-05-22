@@ -32,10 +32,10 @@ int main(void)
 	//GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SISO639LANGNAME, langCode, 9);
 	//lq_debug_print_format_wstring(LQ_WTEXT(__FILE__), (unsigned int)(__LINE__), L"User default locale: %s, UI language: %u, ISO 639 language code: %s", localeName, langId, langCode);
 
-	lq_bool_t result = test_lq_document_minimal_implementation();
+	lq_bool_t result = test_lq_core_doument_minimal_implementation();
 	if (result == lq_false)
 	{
-		LQ_ASSERT(lq_false, "lq_document minimal implementation test failed");
+		LQ_ASSERT(lq_false, "lq_core_doument minimal implementation test failed");
 		return -1;
 	}
 

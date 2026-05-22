@@ -5,15 +5,15 @@
 
 #include <litehtml.h>
 
-class lq_document_container : public litehtml::document_container
+class lq_wrapper_document_container : public litehtml::document_container
 {
 public:
-	        lq_document_container
+	        lq_wrapper_document_container
 			(
-				lq_document_t document, 
-				const lq_document_callbacks_t* callbacks
+				lq_core_doument_t document, 
+				const lq_core_doument_callbacks_t* callbacks
 			) noexcept : _document(document), _callbacks(*callbacks) {}
-	virtual ~lq_document_container(void) = default;
+	virtual ~lq_wrapper_document_container(void) = default;
 
 private:
 	virtual litehtml::uint_ptr create_font(const litehtml::font_description& descr, const litehtml::document* doc, litehtml::font_metrics* fm) noexcept override;
@@ -53,13 +53,13 @@ private:
 	virtual void get_language(litehtml::string& language, litehtml::string& culture) const override;
 
 private:
-	lq_document_callbacks_t _callbacks = {};
-	lq_document_t _document = nullptr;
+	lq_core_doument_callbacks_t _callbacks = {};
+	lq_core_doument_t _document = nullptr;
 };
 
-typedef struct lq_document
+typedef struct lq_core_doument
 {
 	litehtml::document::ptr base;
-	lq_document_container*  container;
+	lq_wrapper_document_container*  container;
 	lq_uintptr_t user_data;
-} *lq_document_t;
+} *lq_core_doument_t;

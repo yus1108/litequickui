@@ -35,6 +35,9 @@ All original copyright and license notices are preserved.
 ## 📦 Project Structure
 ```
 litequickui/
+ ├─ assets/         # Sample HTML/CSS/JS files and bundled fonts
+      └─ fonts/
+            └─ noto_sans/
  ├─ litequickui/    # core + text backend + graphics backend
  ├─ lq_core/        # Core engine (litehtml + QuickJS)
  ├─ lq_dx12/        # DirectX 12 graphics backend (Windows)
@@ -44,9 +47,7 @@ litequickui/
       ├─ litehtml/
       ├─ quickjs/
       ├─ freetype/
-      ├─ harfbuzz/
-      └─ fonts/
-            └─ noto_sans/
+      └─ harfbuzz/
 ```
 
 ---
@@ -135,7 +136,7 @@ or distribution package.
 License: external/harfbuzz/COPYING
 
 ## Noto Sans (SIL Open Font License 1.1)
-License: external/fonts/noto_sans/OFL.txt
+License: assets/fonts/noto_sans/OFL.txt
 
 Note: Noto Sans is licensed under the SIL Open Font License 1.1,  
 which permits embedding, modification, and redistribution under specific conditions.  

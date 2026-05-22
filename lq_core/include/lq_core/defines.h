@@ -47,3 +47,5 @@ LQ_DEBUG_ONLY(static_assert(LQ_INTERNAL_ENUM_COUNT == static_cast<size_t>(_EnumT
 
 LQ_CORE_API void lq_debug_print_format_string(const char* file, unsigned int line, const char* format, ...);
 LQ_CORE_API void lq_debug_print_format_wstring(const wchar_t* file, unsigned int line, const wchar_t* format, ...);
+
+#define LQ_UINT32_MAX 0xFFFFFFFF

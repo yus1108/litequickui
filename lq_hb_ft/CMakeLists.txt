@@ -2,19 +2,22 @@ cmake_minimum_required(VERSION 3.20)
 project(lq_hb_ft)
 
 set(LQ_HB_FT_SOURCE 
+ "src/lq_hb_ft.cpp"
+
+ "src/font_register.cpp"
 )
 
 set(LQ_HB_FT_HEADER 
  "include/lq_hb_ft.h"
- "include/lq_hb_ft/defines.h"
-)
+ 
+ "include/lq_hb_ft/font_register.h")
 
 add_library(lq_hb_ft ${LQ_HB_FT_SOURCE} ${LQ_HB_FT_HEADER} )
 
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(lq_hb_ft PRIVATE LQ_HB_FT_EXPORTS)
+    target_compile_definitions(lq_hb_ft PRIVATE LQ_CORE_EXPORTS LQ_HB_FT_EXPORTS)
 else()
-    target_compile_definitions(lq_hb_ft PUBLIC LQ_HB_FT_STATIC)
+    target_compile_definitions(lq_hb_ft PUBLIC LQ_CORE_STATIC LQ_HB_FT_STATIC)
 endif()
 
 target_include_directories(lq_hb_ft

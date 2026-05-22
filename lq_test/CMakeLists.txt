@@ -26,6 +26,7 @@ set_property(TARGET lq_test PROPERTY
 # TODO: freetype & harfbuzz should be removed from here and added to lq_hb_ft
 target_link_libraries(lq_test PRIVATE
     lq_core
+    lq_hb_ft
     freetype
     harfbuzz
 )
@@ -36,3 +37,9 @@ if(WIN32)
 #         WIN32_EXECUTABLE YES
 #     )
 endif()
+
+add_custom_target(run_lq_test
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE:lq_test>
+    DEPENDS lq_test
+)

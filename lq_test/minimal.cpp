@@ -4,7 +4,7 @@
 
 #include <lq_core.h>
 
-lq_bool_t test_lq_document_minimal_implementation(void)
+lq_bool_t test_lq_core_doument_minimal_implementation(void)
 {
 	typedef struct user_data
 	{
@@ -13,15 +13,15 @@ lq_bool_t test_lq_document_minimal_implementation(void)
 
 
 	const lq_char_t* html_cstr = "<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello CMake.</h1></body></html>";
-	std::cout << "Testing lq_document with HTML: " << html_cstr << std::endl;
+	std::cout << "Testing lq_core_doument with HTML: " << html_cstr << std::endl;
 
 	lq_utf8_str_t html_utf8 = lq_utf8_str_create_cstr(html_cstr);
-	lq_document_callbacks_t callbacks = {};
-	callbacks.calc_text_width = [](const lq_byte_t* utf8_bytes_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
+	lq_core_doument_callbacks_t callbacks = {};
+	callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
 		{
 			LQ_UNUSED(font_handle, user_data);
 			lq_uint32_t length;
-			lq_inspect_raw_utf8(&length, nullptr, utf8_bytes_text);
+			lq_inspect_utf8_bytes(&length, nullptr, utf8_text);
 			return length * 10.0f; // Return a dummy width based on character count
 		};
 	callbacks.create_font = [](lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document) -> lq_uintptr_t
@@ -42,10 +42,10 @@ lq_bool_t test_lq_document_minimal_implementation(void)
 			LQ_UNUSED(font_handle, user_data);
 			// No actual font resource to clean up in this dummy implementation
 		};
-	callbacks.draw_text = [](lq_uintptr_t hdc, const lq_byte_t* utf8_bytes_text, lq_uintptr_t font_handle, const lq_color_t* color, const lq_rect_t* quad, lq_uintptr_t user_data)
+	callbacks.draw_text = [](lq_uintptr_t hdc, const lq_byte_t* utf8_text, lq_uintptr_t font_handle, const lq_color_t* color, const lq_rect_t* quad, lq_uintptr_t user_data)
 		{
 			LQ_UNUSED(hdc, font_handle, color, user_data);
-			std::cout << "Drawing text: \"" << lq_cast_to_cstr(utf8_bytes_text) << "\" at (" << quad->x << ", " << quad->y << ") with width " << quad->width << " and height " << quad->height << std::endl;
+			std::cout << "Drawing text: \"" << lq_cast_to_cstr(utf8_text) << "\" at (" << quad->x << ", " << quad->y << ") with width " << quad->width << " and height " << quad->height << std::endl;
 		};
 	callbacks.get_default_font_name = [](lq_uintptr_t user_data) -> lq_utf8_str_t
 		{
@@ -75,22 +75,22 @@ lq_bool_t test_lq_document_minimal_implementation(void)
 			out_viewport->width = 1920.0f;
 			out_viewport->height = 1080.0f;
 		};
-	callbacks.set_caption = [](const lq_byte_t* utf8_bytes_caption, lq_uintptr_t user_data)
+	callbacks.set_caption = [](const lq_byte_t* utf8_caption, lq_uintptr_t user_data)
 		{
 			LQ_UNUSED(user_data);
-			std::cout << "Document caption set to: " << lq_cast_to_cstr(utf8_bytes_caption) << std::endl;
+			std::cout << "Document caption set to: " << lq_cast_to_cstr(utf8_caption) << std::endl;
 		};
 	user_data_t userData;
 	userData.default_font_name = lq_utf8_str_create_cstr("Noto Sans");
-	lq_document_t document = lq_document_create(html_utf8, &callbacks, reinterpret_cast<lq_uintptr_t>(&userData));
+	lq_core_doument_t document = lq_core_doument_create(html_utf8, &callbacks, reinterpret_cast<lq_uintptr_t>(&userData));
 
-	lq_pixel_t layout_height = lq_document_calc_layout(document, 1920.0f, LQ_WRAPPER_RENDER_TYPE_ALL);
+	lq_pixel_t layout_height = lq_core_doument_calc_layout(document, 1920.0f, LQ_WRAPPER_RENDER_TYPE_ALL);
 	std::cout << "Calculated layout height: " << layout_height << std::endl;
 
 	lq_rect_t clip = lq_rect_create(0.0f, 0.0f, 1920.0f, 1080.0f);
-	lq_document_draw(document, 0, 0.0f, 0.0f, &clip);
+	lq_core_doument_draw(document, 0, 0.0f, 0.0f, &clip);
 
-	lq_document_destroy(document);
+	lq_core_doument_destroy(document);
 	lq_utf8_str_destroy(html_utf8);
 	lq_utf8_str_destroy(userData.default_font_name);
 	return lq_true;
