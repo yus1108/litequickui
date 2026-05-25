@@ -49,3 +49,5 @@ LQ_CORE_API void lq_debug_print_format_string(const char* file, unsigned int lin
 LQ_CORE_API void lq_debug_print_format_wstring(const wchar_t* file, unsigned int line, const wchar_t* format, ...);
 
 #define LQ_UINT32_MAX 0xFFFFFFFF
+#define LQ_INT32_MAX  0x7FFFFFFF
+#define LQ_INT32_MIN  (-LQ_INT32_MAX - 1)

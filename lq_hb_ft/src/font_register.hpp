@@ -4,6 +4,8 @@
 #include "font.hpp"
 
 static inline const lq_uint32_t LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY = 4;
+static inline const lq_uint32_t LQ_HB_FT_POOL_CAP_MULTIPLIER = 2;
+
 
 typedef struct lq_hb_ft_font_source
 {
@@ -33,6 +35,7 @@ void                        lq_hb_ft_font_source_pool_destroy(lq_hb_ft_font_sour
 lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_acquire_back(lq_hb_ft_font_source_pool_t* sources);
 lq_bool_t               lq_hb_ft_font_source_pool_contains(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t path);
 lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_find(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t* path);
+lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_get(const lq_hb_ft_font_source_pool_t* sources, lq_uint32_t index);
 void                    lq_hb_ft_font_source_pool_reserve(lq_hb_ft_font_source_pool_t* sources, lq_uint32_t capacity);
 
 typedef struct lq_hb_ft_font_family
@@ -69,6 +72,13 @@ typedef struct lq_hb_ft_font_instance
 	lq_font_query_t query;
 } lq_hb_ft_font_instance_t;
 
+static inline lq_bool_t lq_hb_ft_font_instance_find_by_query(const void* element, const void* key)
+{
+	const lq_hb_ft_font_instance_t* instance = (const lq_hb_ft_font_instance_t*)element;
+	const lq_font_query_t* query = (const lq_font_query_t*)key;
+	return lq_font_query_equals(&instance->query, query);
+}
+
 typedef struct lq_hb_ft_font_instance_pool
 {
 	lq_array_t  array; // lq_hb_ft_font_instance_t
@@ -77,6 +87,9 @@ typedef struct lq_hb_ft_font_instance_pool
 
 lq_hb_ft_font_instance_pool_t lq_hb_ft_font_instance_pool_create(lq_uint32_t capacity);
 void                          lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* instances);
+
+lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_acquire_back(lq_hb_ft_font_instance_pool_t* instances);
+lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_find(const lq_hb_ft_font_instance_pool_t* instances, const lq_font_query_t* query);
 
 typedef struct lq_hb_ft_font_register
 {
