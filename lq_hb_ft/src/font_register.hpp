@@ -1,7 +1,7 @@
 #pragma once
 #include "lq_hb_ft/font_register.h"
 
-#include <freetype/freetype.h>
+#include "font.hpp"
 
 static inline const lq_uint32_t LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY = 4;
 
@@ -64,7 +64,8 @@ lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_find(const lq_hb_ft_font_famil
 
 typedef struct lq_hb_ft_font_instance
 {
-	FT_Face face;
+	lq_core_font_interface_t font_interface;
+	struct lq_hb_ft_font     font;
 	lq_font_query_t query;
 } lq_hb_ft_font_instance_t;
 

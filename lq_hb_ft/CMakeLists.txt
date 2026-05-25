@@ -3,14 +3,15 @@ project(lq_hb_ft)
 
 set(LQ_HB_FT_SOURCE 
  "src/lq_hb_ft.cpp"
-
+ "src/font.cpp"
  "src/font_register.cpp"
 )
 
 set(LQ_HB_FT_HEADER 
  "include/lq_hb_ft.h"
- 
- "include/lq_hb_ft/font_register.h")
+ "include/lq_hb_ft/font.h"
+ "include/lq_hb_ft/font_register.h" 
+)
 
 add_library(lq_hb_ft ${LQ_HB_FT_SOURCE} ${LQ_HB_FT_HEADER} )
 

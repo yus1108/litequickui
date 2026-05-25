@@ -62,6 +62,12 @@ void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq
 
 lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_register_t font_register, const lq_font_query_t* query)
 {
+	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
+	LQ_DEBUG_ASSERT(query != NULL, "query must not be NULL");
+	LQ_DEBUG_ASSERT(lq_utf8_str_is_valid(query->family), "query family must be a valid UTF-8 string");
+	LQ_DEBUG_ASSERT(query->size > 0, "query pixel size must be greater than 0");
+	LQ_DEBUG_ASSERT(query->style == LQ_WRAPPER_FONT_STYLE_NORMAL || query->style == LQ_WRAPPER_FONT_STYLE_ITALIC, "query style must be either normal or italic");
+	LQ_DEBUG_ASSERT(query->weight > 0, "query weight must be greater than 0");
 	return lq_core_font_interface_t();
 }
 
