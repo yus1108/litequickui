@@ -44,6 +44,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 
 	app_data.font_register = lq_core_font_register_interface_bind_hb_ft(lq_hb_ft_font_register_create(10, 100)); // Create a font register with an initial capacity for 10 font families and 100 font instances for testing
 
+	lq_hb_ft_font_register_reserve_sources((lq_hb_ft_font_register_t)app_data.font_register.ctx, app_data.families[0], 4); // Reserve enough capacity for 4 font sources for the test font family
 	app_data.font_register.add(app_data.font_register.ctx, app_data.font_paths[0], app_data.families[0]); // Register a common system font for testing
 
 	static const int       BITS_PER_COLOR_CHANNEL         = 8;

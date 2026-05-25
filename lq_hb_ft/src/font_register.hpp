@@ -3,21 +3,7 @@
 
 #include <freetype/freetype.h>
 
-void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t path, const lq_utf8_str_t opt_family);
-
-static inline void lq_core_font_register_bind_hb_ft_add_fn(lq_uintptr_t ctx, const lq_utf8_str_t font_path, const lq_utf8_str_t opt_family)
-{
-	lq_hb_ft_font_register_t font_register = (lq_hb_ft_font_register_t)ctx;
-	lq_hb_ft_font_register_add(font_register, font_path, opt_family);
-}
-
-lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_register_t font_register, const lq_font_query_t* query);
-
-static inline lq_core_font_interface_t lq_core_font_register_bind_hb_ft_find_or_create_fn(lq_uintptr_t ctx, const lq_font_query_t* query)
-{
-	lq_hb_ft_font_register_t font_register = (lq_hb_ft_font_register_t)ctx;
-	return lq_hb_ft_font_register_find_or_create(font_register, query);
-}
+static inline const lq_uint32_t LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY = 4;
 
 typedef struct lq_hb_ft_font_source
 {
@@ -47,6 +33,7 @@ void                        lq_hb_ft_font_source_pool_destroy(lq_hb_ft_font_sour
 lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_acquire_back(lq_hb_ft_font_source_pool_t* sources);
 lq_bool_t               lq_hb_ft_font_source_pool_contains(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t path);
 lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_find(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t* path);
+void                    lq_hb_ft_font_source_pool_reserve(lq_hb_ft_font_source_pool_t* sources, lq_uint32_t capacity);
 
 typedef struct lq_hb_ft_font_family
 {
@@ -88,7 +75,7 @@ typedef struct lq_hb_ft_font_instance_pool
 } lq_hb_ft_font_instance_pool_t;
 
 lq_hb_ft_font_instance_pool_t lq_hb_ft_font_instance_pool_create(lq_uint32_t capacity);
-void                          lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* entries);
+void                          lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* instances);
 
 typedef struct lq_hb_ft_font_register
 {

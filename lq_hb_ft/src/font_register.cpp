@@ -21,22 +21,11 @@ void lq_hb_ft_font_register_destroy(lq_hb_ft_font_register_t font_register)
 	delete font_register;
 }
 
-#include <stdio.h>
-#include <direct.h>
-
 void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t path, const lq_utf8_str_t opt_family)
 {
 	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
 
 	const lq_char_t* path_cstr = lq_utf8_str_get_cstr(path);
-
-	char buffer[1024];
-	if (_getcwd(buffer, sizeof(buffer)) != NULL) {
-		printf("Current directory: %s\n", buffer);
-	}
-	else {
-		perror("_getcwd() error");
-	}
 
 	FT_Face face = nullptr;
 	LQ_DEBUG_ONLY(FT_Error err = )FT_New_Face(font_register->lib, path_cstr, -1, &face);
@@ -55,7 +44,7 @@ void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq
 		{
 			font_family = lq_hb_ft_font_family_pool_acquire_back(&font_register->families);
 			font_family->name = family_name;
-			font_family->sources = lq_hb_ft_font_source_pool_create(4); // Create a font source pool with an initial capacity for 4 font sources for testing
+			font_family->sources = lq_hb_ft_font_source_pool_create(LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY);
 		}
 
 		TT_OS2* os2 = static_cast<TT_OS2*>(FT_Get_Sfnt_Table(face, FT_SFNT_OS2));
@@ -74,6 +63,25 @@ void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq
 lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_register_t font_register, const lq_font_query_t* query)
 {
 	return lq_core_font_interface_t();
+}
+
+LQ_HB_FT_API void lq_hb_ft_font_register_reserve_sources(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t family, lq_uint32_t cap)
+{
+	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
+	LQ_DEBUG_ASSERT(cap > 0, "cap must be greater than 0");
+
+	lq_hb_ft_font_family_t* font_family = lq_hb_ft_font_family_pool_find(&font_register->families, family);
+	if (font_family != nullptr)
+	{
+		lq_hb_ft_font_source_pool_t sources = font_family->sources;
+		lq_hb_ft_font_source_pool_reserve(&sources, cap);
+	}
+	else
+	{
+		font_family = lq_hb_ft_font_family_pool_acquire_back(&font_register->families);
+		font_family->name = family;
+		font_family->sources = lq_hb_ft_font_source_pool_create(cap);
+	}
 }
 
 lq_hb_ft_font_source_pool_t lq_hb_ft_font_source_pool_create(lq_uint32_t capacity)
@@ -117,6 +125,16 @@ lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_find(const lq_hb_ft_font_sourc
 {
 	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
 	return (lq_hb_ft_font_source_t*)lq_array_find_range(sources->array, 0, sources->count, path, &lq_hb_ft_font_source_find_by_path);
+}
+
+void lq_hb_ft_font_source_pool_reserve(lq_hb_ft_font_source_pool_t* sources, lq_uint32_t capacity)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	LQ_DEBUG_ASSERT(capacity > 0, "capacity must be greater than 0");
+	if (lq_array_get_count(sources->array) < capacity)
+	{
+		lq_array_resize(sources->array, capacity);
+	}
 }
 
 lq_hb_ft_font_family_pool_t lq_hb_ft_font_family_pool_create(lq_uint32_t capacity)
@@ -172,11 +190,11 @@ lq_hb_ft_font_instance_pool_t lq_hb_ft_font_instance_pool_create(lq_uint32_t cap
 	return instances;
 }
 
-void lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* entries)
+void lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* instances)
 {
-	LQ_DEBUG_ASSERT(entries != NULL, "entries must not be NULL");
-	LQ_DEBUG_ASSERT(entries->array != NULL, "entries->array must not be NULL");
-	lq_array_destroy(entries->array);
-	entries->array = NULL;
-	entries->count = 0;
+	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
+	LQ_DEBUG_ASSERT(instances->array != NULL, "instances->array must not be NULL");
+	lq_array_destroy(instances->array);
+	instances->array = NULL;
+	instances->count = 0;
 }
