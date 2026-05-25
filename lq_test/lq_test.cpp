@@ -35,7 +35,7 @@ int main(void)
 	lq_bool_t result = test_lq_core_doument_minimal_implementation();
 	if (result == lq_false)
 	{
-		LQ_ASSERT(lq_false, "lq_core_doument minimal implementation test failed");
+		LQ_ASSERT(lq_false, "lq_core_document minimal implementation test failed");
 		return -1;
 	}
 

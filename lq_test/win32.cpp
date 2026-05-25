@@ -19,7 +19,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 		lq_utf8_str_t families[1];
 		lq_utf8_str_t font_paths[1];
 		lq_utf8_str_t title;
-		lq_core_doument_t document;
+		lq_core_document_t document;
 		lq_core_font_register_interface_t font_register;
 	} win32_app_user_data_t;
 	win32_app_user_data_t app_data = {};
@@ -60,7 +60,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	html_data.app = app;
 	html_data.default_font_name = lq_utf8_str_create(DEFAULT_FONT_NAME_UTF8_BYTES);
 
-	lq_core_doument_callbacks_t doc_callbacks = {};
+	lq_core_document_callbacks_t doc_callbacks = {};
 	doc_callbacks.get_media_features = [](lq_wrapper_media_features_t* out_media, lq_uintptr_t user_data)
 		{
 			lq_pixel2_t monitor_resolution = win32_app_get_monitor_resolution(((lq_html_user_data_t*)user_data)->app);
@@ -123,7 +123,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 		};
 
 	lq_utf8_str_t html_str = lq_utf8_str_create_cstr("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Test Document</title></head><body><h1>Hello, World!</h1></body></html>");
-	app_data.document = lq_core_doument_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
+	app_data.document = lq_core_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
 	lq_utf8_str_destroy(html_str);
 
 	win32_app_show(app);
@@ -132,7 +132,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	{
 	}
 
-	lq_core_doument_destroy(app_data.document);
+	lq_core_document_destroy(app_data.document);
 	lq_utf8_str_destroy(html_data.default_font_name);
 
 	win32_app_destroy(app);

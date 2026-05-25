@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 3.20)
 project(litequickui)
 
 set(LITEQUICKUI_SOURCE 
- "src/litequickui.cpp"
+ "src/document.cpp"
 )
 
 set(LITEQUICKUI_HEADER 
  "include/litequickui.h"
- "include/litequickui/defines.h")
+ "include/litequickui/defines.h"
+ "include/litequickui/document.h"
+)
 
 add_library(litequickui ${LITEQUICKUI_SOURCE} ${LITEQUICKUI_HEADER} )
 

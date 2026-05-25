@@ -13,10 +13,10 @@ lq_bool_t test_lq_core_doument_minimal_implementation(void)
 
 
 	const lq_char_t* html_cstr = "<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello CMake.</h1></body></html>";
-	std::cout << "Testing lq_core_doument with HTML: " << html_cstr << std::endl;
+	std::cout << "Testing lq_core_document with HTML: " << html_cstr << std::endl;
 
 	lq_utf8_str_t html_utf8 = lq_utf8_str_create_cstr(html_cstr);
-	lq_core_doument_callbacks_t callbacks = {};
+	lq_core_document_callbacks_t callbacks = {};
 	callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
 		{
 			LQ_UNUSED(font_handle, user_data);
@@ -82,15 +82,15 @@ lq_bool_t test_lq_core_doument_minimal_implementation(void)
 		};
 	user_data_t userData;
 	userData.default_font_name = lq_utf8_str_create_cstr("Noto Sans");
-	lq_core_doument_t document = lq_core_doument_create(html_utf8, &callbacks, reinterpret_cast<lq_uintptr_t>(&userData));
+	lq_core_document_t document = lq_core_document_create(html_utf8, &callbacks, reinterpret_cast<lq_uintptr_t>(&userData));
 
-	lq_pixel_t layout_height = lq_core_doument_calc_layout(document, 1920.0f, LQ_WRAPPER_RENDER_TYPE_ALL);
+	lq_pixel_t layout_height = lq_core_document_calc_layout(document, 1920.0f, LQ_WRAPPER_RENDER_TYPE_ALL);
 	std::cout << "Calculated layout height: " << layout_height << std::endl;
 
 	lq_rect_t clip = lq_rect_create(0.0f, 0.0f, 1920.0f, 1080.0f);
-	lq_core_doument_draw(document, 0, 0.0f, 0.0f, &clip);
+	lq_core_document_draw(document, 0, lq_pixel2_create(0.f, 0.f), &clip);
 
-	lq_core_doument_destroy(document);
+	lq_core_document_destroy(document);
 	lq_utf8_str_destroy(html_utf8);
 	lq_utf8_str_destroy(userData.default_font_name);
 	return lq_true;

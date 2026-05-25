@@ -31,7 +31,7 @@ litehtml::uint_ptr lq_wrapper_document_container::create_font(const litehtml::fo
 void lq_wrapper_document_container::delete_font(litehtml::uint_ptr hFont) noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.delete_font != nullptr, "delete_font callback must be provided.");
-	_callbacks.delete_font(hFont, lq_core_doument_get_user_data(_document));
+	_callbacks.delete_font(hFont, lq_core_document_get_user_data(_document));
 }
 
 void lq_wrapper_document_container::draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
@@ -48,7 +48,7 @@ void lq_wrapper_document_container::draw_text(litehtml::uint_ptr hdc, const char
 		hFont,
 		&color_wrapper,
 		reinterpret_cast<const lq_rect_t*>(&pos),
-		lq_core_doument_get_user_data(_document)
+		lq_core_document_get_user_data(_document)
 	);
 }
 
@@ -56,7 +56,7 @@ const char* lq_wrapper_document_container::get_default_font_name(void) const noe
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_default_font_name != nullptr, "get_default_font_name callback must be provided.");
 
-	lq_utf8_str_t fontName = _callbacks.get_default_font_name(lq_core_doument_get_user_data(_document));
+	lq_utf8_str_t fontName = _callbacks.get_default_font_name(lq_core_document_get_user_data(_document));
 	LQ_DEBUG_ASSERT(fontName != nullptr, "get_default_font_name callback returned null.");
 	return lq_cast_to_cstr(fontName->bytes);
 }
@@ -64,20 +64,20 @@ const char* lq_wrapper_document_container::get_default_font_name(void) const noe
 litehtml::pixel_t lq_wrapper_document_container::get_default_font_size(void) const noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_default_font_size != nullptr, "get_default_font_size callback must be provided.");
-	return _callbacks.get_default_font_size(lq_core_doument_get_user_data(_document));
+	return _callbacks.get_default_font_size(lq_core_document_get_user_data(_document));
 }
 
 void lq_wrapper_document_container::get_media_features(litehtml::media_features& media) const noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_media_features != nullptr, "Media features callback must be provided.");
-	_callbacks.get_media_features(reinterpret_cast<lq_wrapper_media_features_t*>(&media), lq_core_doument_get_user_data(_document));
+	_callbacks.get_media_features(reinterpret_cast<lq_wrapper_media_features_t*>(&media), lq_core_document_get_user_data(_document));
 	LQ_STATIC_ASSERT(sizeof(litehtml::media_features) == sizeof(lq_wrapper_media_features_t), WRAPPER_STRUCT_SIZE_MISMATCH);
 }
 
 void lq_wrapper_document_container::get_viewport(litehtml::position& viewport) const
 {
 	LQ_DEBUG_ASSERT(_callbacks.get_viewport != nullptr, "get_viewport callback must be provided.");
-	_callbacks.get_viewport(reinterpret_cast<lq_rect_t*>(&viewport), lq_core_doument_get_user_data(_document));
+	_callbacks.get_viewport(reinterpret_cast<lq_rect_t*>(&viewport), lq_core_document_get_user_data(_document));
 	LQ_STATIC_ASSERT(sizeof(litehtml::position) == sizeof(lq_rect_t), WRAPPER_STRUCT_SIZE_MISMATCH);
 }
 
@@ -87,7 +87,7 @@ void lq_wrapper_document_container::set_caption(const char* caption) noexcept
 	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, caption) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.set_caption != nullptr, "set_caption callback must be provided.");
 
-	_callbacks.set_caption(lq_cast_to_bytes(caption), lq_core_doument_get_user_data(_document));
+	_callbacks.set_caption(lq_cast_to_bytes(caption), lq_core_document_get_user_data(_document));
 }
 
 litehtml::pixel_t lq_wrapper_document_container::text_width(const char* text, litehtml::uint_ptr hFont)
@@ -96,7 +96,7 @@ litehtml::pixel_t lq_wrapper_document_container::text_width(const char* text, li
 	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, text) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.calc_text_width != nullptr, "calc_text_width callback must be provided.");
 
-	return _callbacks.calc_text_width(lq_cast_to_bytes(text), hFont, lq_core_doument_get_user_data(_document));
+	return _callbacks.calc_text_width(lq_cast_to_bytes(text), hFont, lq_core_document_get_user_data(_document));
 }
 
 litehtml::pixel_t lq_wrapper_document_container::pt_to_px(float pt) const
@@ -222,11 +222,11 @@ void lq_wrapper_document_container::get_language(litehtml::string& language, lit
 	LQ_DEBUG_ASSERT(false, "get_language is not implemented yet.");
 }
 
-lq_core_doument_t lq_core_doument_create(const lq_utf8_str_t html_data, const lq_core_doument_callbacks_t* callbacks, lq_uintptr_t user_data)
+lq_core_document_t lq_core_document_create(const lq_utf8_str_t html_data, const lq_core_document_callbacks_t* callbacks, lq_uintptr_t user_data)
 {
 	LQ_DEBUG_ASSERT(html_data != nullptr, "Input data must not be null.");
 
-	lq_core_doument_t doc = new struct lq_core_doument();
+	lq_core_document_t doc = new struct lq_core_document();
 	doc->container = new lq_wrapper_document_container(doc, callbacks);
 	doc->user_data = user_data;
 	// Create document base from input HTML string encoded as UTF-8
@@ -236,7 +236,7 @@ lq_core_doument_t lq_core_doument_create(const lq_utf8_str_t html_data, const lq
 	return doc;
 }
 
-void lq_core_doument_destroy(lq_core_doument_t document)
+void lq_core_document_destroy(lq_core_document_t document)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 
@@ -246,21 +246,21 @@ void lq_core_doument_destroy(lq_core_doument_t document)
 	delete container;
 }
 
-lq_uintptr_t lq_core_doument_get_user_data(const lq_core_doument_t document)
+lq_uintptr_t lq_core_document_get_user_data(const lq_core_document_t document)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 	return document->user_data;
 }
 
-lq_pixel_t lq_core_doument_calc_layout(lq_core_doument_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type)
+lq_pixel_t lq_core_document_calc_layout(lq_core_document_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 	return document->base->render(max_width, static_cast<litehtml::render_type>(render_type));
 }
 
-void lq_core_doument_draw(lq_core_doument_t document, lq_uintptr_t hdc, lq_pixel_t x, lq_pixel_t y, const lq_rect_t* clip)
+void lq_core_document_draw(lq_core_document_t document, lq_uintptr_t hdc, lq_pixel2_t pos, const lq_rect_t* clip)
 {
 	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
-	document->base->draw(hdc, x, y, reinterpret_cast<const litehtml::position*>(clip));
+	document->base->draw(hdc, pos.x, pos.y, reinterpret_cast<const litehtml::position*>(clip));
 	LQ_STATIC_ASSERT(sizeof(lq_rect_t) == sizeof(litehtml::position), WRAPPER_STRUCT_SIZE_MISMATCH);
 }

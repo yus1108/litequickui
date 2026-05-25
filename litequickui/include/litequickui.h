@@ -6,3 +6,4 @@
 #endif
 
 #include "litequickui/defines.h"
+#include "litequickui/document.h"
