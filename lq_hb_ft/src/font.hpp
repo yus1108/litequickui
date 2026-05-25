@@ -4,8 +4,6 @@
 #include <freetype/freetype.h>
 #include <hb-ft.h>
 
-lq_core_font_interface_t lq_core_font_interface_bind_hb_ft(lq_hb_ft_font_t derived);
-
 typedef struct lq_hb_ft_font
 {
 	FT_Face    face;

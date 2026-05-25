@@ -1,7 +1,7 @@
 #pragma once
 
 // MACRO DEFINITIONS
-#if defined(NULL)
+#if !defined(NULL)
 	#if defined(__cplusplus)
 		#define NULL 0
 	#else

@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 3.20)
 project(lq_hb_ft)
 
 set(LQ_HB_FT_SOURCE 
- "src/lq_hb_ft.cpp"
+ 
+ "src/bind.cpp"
  "src/font.cpp"
  "src/font_register.cpp"
 )
 
 set(LQ_HB_FT_HEADER 
  "include/lq_hb_ft.h"
+ "include/lq_hb_ft/bind.h"
  "include/lq_hb_ft/font.h"
  "include/lq_hb_ft/font_register.h" 
 )

@@ -3,13 +3,6 @@
 
 #include <math.h>
 
-lq_core_font_interface_t lq_core_font_interface_bind_hb_ft(lq_hb_ft_font_t derived)
-{
-	lq_core_font_interface_t font_interface;
-	font_interface.ctx = (lq_uintptr_t)derived;
-	return font_interface;
-}
-
 void lq_hb_ft_font_init(lq_hb_ft_font_t font, FT_Library lib, const lq_utf8_str_t path, lq_uint32_t index, lq_pixel_t size)
 {
 	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
