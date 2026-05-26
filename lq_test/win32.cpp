@@ -6,6 +6,7 @@
 
 #include <lq_core.h>
 #include <lq_hb_ft.h>
+#include <litequickui.h>
 
 #include "win32_api.h"
 
@@ -19,7 +20,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 		lq_utf8_str_t families[1];
 		lq_utf8_str_t font_paths[1];
 		lq_utf8_str_t title;
-		lq_core_document_t document;
+		lq_document_t document;
 		lq_core_font_register_interface_t font_register;
 	} win32_app_user_data_t;
 	win32_app_user_data_t app_data = {};
@@ -60,7 +61,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	html_data.app = app;
 	html_data.default_font_name = lq_utf8_str_create(DEFAULT_FONT_NAME_UTF8_BYTES);
 
-	lq_core_document_callbacks_t doc_callbacks = {};
+	lq_document_callbacks_t doc_callbacks = {};
 	doc_callbacks.get_media_features = [](lq_wrapper_media_features_t* out_media, lq_uintptr_t user_data)
 		{
 			lq_pixel2_t monitor_resolution = win32_app_get_monitor_resolution(((lq_html_user_data_t*)user_data)->app);
@@ -95,35 +96,9 @@ lq_bool_t test_win32_api_implmenetation(void)
 			lq_html_user_data_t* htmlUserData = (lq_html_user_data_t*)user_data;
 			return htmlUserData->default_font_name; // Return a default font name for testing
 		};
-	doc_callbacks.create_font = [](lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document) -> lq_uintptr_t
-		{
-			LQ_UNUSED(document);
-			LQ_UNUSED(font_desc);
-			// For testing purposes, we can return a dummy font handle and metrics.
-			out_metrics->ascent = 12.0f;
-			out_metrics->descent = 4.0f;
-			LQ_ASSERT(lq_false, "TODO: Implement create_font callback to create real fonts and calculate real font metrics based on the font description.");
-			return 0; // Dummy font handle
-		};
-	doc_callbacks.delete_font = [](lq_uintptr_t font_handle, lq_uintptr_t user_data)
-		{
-			LQ_UNUSED(font_handle);
-			LQ_UNUSED(user_data);
-			// For testing purposes, we don't need to do anything here since we are not actually creating real fonts.
-			LQ_ASSERT(lq_false, "TODO: Implement delete_font callback to delete real fonts created in the create_font callback.");
-		};
-	doc_callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
-		{
-			LQ_UNUSED(font_handle);
-			LQ_UNUSED(user_data);
-			lq_uint32_t utf8_text_length, utf8_text_size;
-			lq_inspect_utf8_bytes(&utf8_text_length, &utf8_text_size, utf8_text);
-			LQ_ASSERT(lq_false, "TODO: Implement calc_text_width callback to calculate real text width based on the font metrics and the actual text content.");
-			return static_cast<lq_pixel_t>(utf8_text_length * 8); // Assume each character is 8 pixels wide for testing
-		};
 
 	lq_utf8_str_t html_str = lq_utf8_str_create_cstr("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Test Document</title></head><body><h1>Hello, World!</h1></body></html>");
-	app_data.document = lq_core_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
+	app_data.document = lq_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
 	lq_utf8_str_destroy(html_str);
 
 	win32_app_show(app);
@@ -132,7 +107,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	{
 	}
 
-	lq_core_document_destroy(app_data.document);
+	lq_document_destroy(app_data.document);
 	lq_utf8_str_destroy(html_data.default_font_name);
 
 	win32_app_destroy(app);

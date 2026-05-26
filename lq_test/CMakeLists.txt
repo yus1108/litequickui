@@ -27,6 +27,7 @@ set_property(TARGET lq_test PROPERTY
 target_link_libraries(lq_test PRIVATE
     lq_core
     lq_hb_ft
+    litequickui
     freetype
     harfbuzz
 )
