@@ -163,6 +163,17 @@ static inline lq_pixel_t lq_wrapper_css_length_calc_percent(const lq_wrapper_css
 	return 0;
 }
 
+static inline lq_bool_t lq_wrapper_css_length_equal(const lq_wrapper_css_length_t* a, const lq_wrapper_css_length_t* b)
+{
+	LQ_DEBUG_ASSERT(a != nullptr, "Input length a must not be null.");
+	LQ_DEBUG_ASSERT(b != nullptr, "Input length b must not be null.");
+	if (a->is_predefined != b->is_predefined)
+	{
+		return lq_false;
+	}
+	return a->is_predefined ? (a->predef == b->predef) : (a->units == b->units && a->value == b->value);
+}
+
 // wrapper enum for litehtml::text_decoration_line
 typedef enum lq_wrapper_text_decoration_line
 {

@@ -3,6 +3,52 @@
 
 #include <stdlib.h>
 
+lq_document_font_pool lq_document_font_pool_create(lq_uint32_t capacity)
+{
+	lq_document_font_pool sources;
+	sources.array = lq_array_create(sizeof(lq_document_font_t), capacity);
+	sources.count = 0;
+	return sources;
+}
+
+void lq_document_font_pool_destroy(lq_document_font_pool_t* pool)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "sources must not be NULL");
+	lq_array_destroy(pool->array);
+	pool->array = NULL;
+	pool->count = 0;
+}
+
+lq_document_font_t* lq_document_font_pool_acquire_back(lq_document_font_pool_t* pool)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
+	LQ_DEBUG_ASSERT(pool->count < LQ_UINT32_MAX, "pool count overflow");
+
+	if (pool->count >= lq_array_get_count(pool->array))
+	{
+		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
+		(pool->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(pool->array, LQ_UINT32_MAX) : lq_array_resize(pool->array, pool->count * LQ_POOL_CAPACITY_MULTIPLIER);
+	}
+
+	return (lq_document_font_t*)lq_array_get(pool->array, pool->count++);
+}
+
+lq_document_font_t* lq_document_font_pool_find(const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
+	return (lq_document_font_t*)lq_array_find_range(pool->array, 0, pool->count, desc, &lq_document_font_find_by_description);
+}
+
+void lq_document_font_pool_reserve(lq_document_font_pool_t* pool, lq_uint32_t capacity)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
+	LQ_DEBUG_ASSERT(capacity > 0, "capacity must be greater than 0");
+	if (lq_array_get_count(pool->array) < capacity)
+	{
+		lq_array_resize(pool->array, capacity);
+	}
+}
+
 inline lq_pixel_t lq_document_override_calc_text_width(const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t data)
 {
 	LQ_UNUSED(utf8_text);
@@ -105,12 +151,21 @@ lq_uintptr_t lq_document_get_user_data(const lq_document_t document)
 
 lq_pixel_t lq_document_calc_layout(lq_document_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type)
 {
+	LQ_UNUSED(document);
+	LQ_UNUSED(max_width);
+	LQ_UNUSED(render_type);
+
 	LQ_DEBUG_ASSERT(lq_false, "lq_document_calc_layout is not implemented yet.");
 	return lq_pixel_t();
 }
 
 void lq_document_draw(lq_document_t document, lq_uintptr_t hdc, lq_pixel2_t pos, const lq_rect_t* clip)
 {
+	LQ_UNUSED(document);
+	LQ_UNUSED(hdc);
+	LQ_UNUSED(pos);
+	LQ_UNUSED(clip);
+
 	LQ_DEBUG_ASSERT(lq_false, "lq_document_draw is not implemented yet.");
 	return void();
 }

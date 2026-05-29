@@ -1,9 +1,60 @@
 #pragma once
 #include "litequickui/document.h"
 
-#if defined(LQ_TEXT_BACKEND_HB_FT)
-	#include <lq_hb_ft.h>
-#endif
+#include <lq_core/array.h>
+#include <lq_core/document.h>
+#include <lq_core/interfaces.h>
+
+typedef struct lq_document_font
+{
+	lq_wrapper_font_description_t desc;
+	lq_wrapper_font_metrics_t     metrics;
+	lq_core_font_interface_t      core;
+} lq_document_font_t;
+
+static inline lq_bool_t lq_document_font_find_by_description(const void* element, const void* description)
+{
+	const lq_document_font_t* font = (const lq_document_font_t*)element;
+	const lq_wrapper_font_description_t* desc = (const lq_wrapper_font_description_t*)description;
+
+	if (font->desc.size != desc->size ||
+		font->desc.style != desc->style ||
+		font->desc.weight != desc->weight ||
+		font->desc.decoration_line != desc->decoration_line ||
+		lq_wrapper_css_length_equal(&font->desc.decoration_thickness, &desc->decoration_thickness) == lq_false ||
+		font->desc.decoration_style != desc->decoration_style ||
+		lq_color_equals(&font->desc.decoration_color, &desc->decoration_color) == lq_false ||
+		lq_color_equals(&font->desc.emphasis_color, &desc->emphasis_color) == lq_false ||
+		font->desc.emphasis_position != desc->emphasis_position)
+	{
+		return lq_false;
+	}
+
+	if (lq_utf8_bytes_equal(font->desc.utf8_family, desc->utf8_family) == lq_false)
+	{
+		return lq_false;
+	}
+
+	if (lq_utf8_bytes_equal(font->desc.utf8_emphasis_style, desc->utf8_emphasis_style) == lq_false)
+	{
+		return lq_false;
+	}
+
+	return lq_true;
+}
+
+typedef struct lq_document_font_pool
+{
+	lq_array_t  array; // lq_document_font_t
+	lq_uint32_t count;
+} lq_document_font_pool_t;
+
+lq_document_font_pool lq_document_font_pool_create(lq_uint32_t capacity);
+void 			      lq_document_font_pool_destroy(lq_document_font_pool_t* pool);
+
+lq_document_font_t* lq_document_font_pool_acquire_back(lq_document_font_pool_t* pool);
+lq_document_font_t* lq_document_font_pool_find(const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc);
+void 			    lq_document_font_pool_reserve(lq_document_font_pool_t* pool, lq_uint32_t capacity);
 
 typedef struct lq_document_data
 {

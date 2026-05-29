@@ -23,6 +23,7 @@ typedef struct lq_document_description
 	lq_document_callbacks_t      callbacks;
 	lq_font_register_interface_t font_register;
 	lq_uintptr_t user_data;
+	lq_uint32_t  font_cap; // The maximum number of unique font descriptions that will be used in this document.
 } lq_document_description_t;
 
 LQ_API lq_document_t lq_document_create(lq_document_description* description);

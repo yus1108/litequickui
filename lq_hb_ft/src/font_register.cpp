@@ -233,7 +233,7 @@ lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_acquire_back(lq_hb_ft_font_sou
 	if (sources->count >= lq_array_get_count(sources->array))
 	{
 		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
-		(sources->count > LQ_UINT32_MAX / LQ_HB_FT_POOL_CAP_MULTIPLIER) ? lq_array_resize(sources->array, LQ_UINT32_MAX) : lq_array_resize(sources->array, sources->count * LQ_HB_FT_POOL_CAP_MULTIPLIER);
+		(sources->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(sources->array, LQ_UINT32_MAX) : lq_array_resize(sources->array, sources->count * LQ_POOL_CAPACITY_MULTIPLIER);
 	}
 
 	return (lq_hb_ft_font_source_t*)lq_array_get(sources->array, sources->count++);
@@ -298,7 +298,7 @@ lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_acquire_back(lq_hb_ft_font_fam
 	if (families->count >= lq_array_get_count(families->array))
 	{
 		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
-		(families->count > LQ_UINT32_MAX / LQ_HB_FT_POOL_CAP_MULTIPLIER) ? lq_array_resize(families->array, LQ_UINT32_MAX) : lq_array_resize(families->array, families->count * LQ_HB_FT_POOL_CAP_MULTIPLIER);
+		(families->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(families->array, LQ_UINT32_MAX) : lq_array_resize(families->array, families->count * LQ_POOL_CAPACITY_MULTIPLIER);
 	}
 
 	return (lq_hb_ft_font_family_t*)lq_array_get(families->array, families->count++);
@@ -336,7 +336,7 @@ lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_acquire_back(lq_hb_ft_font
 	if (instances->count >= lq_array_get_count(instances->array))
 	{
 		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font instances to avoid memory allocation which is expensive.");
-		(instances->count > LQ_UINT32_MAX / LQ_HB_FT_POOL_CAP_MULTIPLIER) ? lq_array_resize(instances->array, LQ_UINT32_MAX) : lq_array_resize(instances->array, instances->count * LQ_HB_FT_POOL_CAP_MULTIPLIER);
+		(instances->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(instances->array, LQ_UINT32_MAX) : lq_array_resize(instances->array, instances->count * LQ_POOL_CAPACITY_MULTIPLIER);
 	}
 
 	return (lq_hb_ft_font_instance_t*)lq_array_get(instances->array, instances->count++);

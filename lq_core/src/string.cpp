@@ -71,6 +71,25 @@ lq_bool_t lq_inspect_utf8_cstr(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt
 	return lq_inspect_utf8_bytes(out_opt_length, out_opt_size, reinterpret_cast<const lq_byte_t*>(data));
 }
 
+LQ_CORE_API lq_bool_t lq_utf8_bytes_equal(const lq_byte_t* a, const lq_byte_t* b)
+{
+	LQ_DEBUG_ASSERT(a != NULL, "Input bytes a must not be null.");
+	LQ_DEBUG_ASSERT(b != NULL, "Input bytes b must not be null.");
+	if (a == b) { return lq_true; }
+
+	lq_uint32_t a_size, b_size;
+	LQ_DEBUG_ONLY(lq_bool_t ret = )lq_inspect_utf8_bytes(NULL, &a_size, a);
+	LQ_DEBUG_ASSERT(ret == lq_true, "Input bytes a must be valid UTF-8.");	
+	LQ_DEBUG_ONLY(ret = )lq_inspect_utf8_bytes(NULL, &b_size, b);
+	LQ_DEBUG_ASSERT(ret == lq_true, "Input bytes b must be valid UTF-8.");
+
+	if (a_size != b_size) { return lq_false; }
+
+	if (a_size == 0) { return lq_true; }
+
+	return std::memcmp(a, b, a_size) == 0 ? lq_true : lq_false;
+}
+
 lq_utf8_str_t lq_utf8_str_create(const lq_byte_t* raw_utf8)
 {
 	LQ_DEBUG_ASSERT(raw_utf8 != NULL, "Input bytes must not be null.");

@@ -4,7 +4,6 @@
 #include "font.hpp"
 
 static inline const lq_uint32_t LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY = 4;
-static inline const lq_uint32_t LQ_HB_FT_POOL_CAP_MULTIPLIER = 2;
 
 typedef struct lq_hb_ft_font_register* lq_hb_ft_font_register_t;
 

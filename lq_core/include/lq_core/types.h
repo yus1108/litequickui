@@ -91,6 +91,11 @@ static inline lq_color_t lq_color_create(lq_byte_t r, lq_byte_t g, lq_byte_t b, 
 	return color;
 }
 
+static inline lq_bool_t lq_color_equals(const lq_color_t* c1, const lq_color_t* c2)
+{
+	return c1->u.rgba == c2->u.rgba;
+}
+
 typedef struct lq_rect
 {
 	lq_pixel_t x;

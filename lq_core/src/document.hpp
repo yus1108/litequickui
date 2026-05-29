@@ -1,8 +1,6 @@
 #pragma once
 #include "lq_core/document.h"
 
-#include <unordered_map>
-
 #include <litehtml.h>
 
 class lq_wrapper_document_container : public litehtml::document_container

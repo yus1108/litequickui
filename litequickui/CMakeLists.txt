@@ -10,7 +10,7 @@ set(LITEQUICKUI_HEADER
  "include/litequickui/defines.h"
  "include/litequickui/document.h"
  "include/litequickui/font_register.h"
-)
+ )
 
 add_library(litequickui ${LITEQUICKUI_SOURCE} ${LITEQUICKUI_HEADER} )
 
