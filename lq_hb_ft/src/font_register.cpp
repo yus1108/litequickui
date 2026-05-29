@@ -94,6 +94,8 @@ void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq
 
 lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_register_t font_register, const lq_font_query_t* query)
 {
+	static lq_core_font_interface_t empty_font_interface = {};
+
 	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
 	LQ_DEBUG_ASSERT(query != NULL, "query must not be NULL");
 	LQ_DEBUG_ASSERT(lq_utf8_str_is_valid(query->family), "query family must be a valid UTF-8 string");
@@ -111,13 +113,13 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 	if (font_family == NULL)
 	{
 		LQ_DEBUG_ASSERT(lq_false, "No font family found for the query: %s", lq_utf8_str_get_cstr(query->family));
-		return lq_core_font_interface_t();
+		return empty_font_interface;
 	}
 
 	if (font_family->sources.count == 0)
 	{
 		LQ_DEBUG_ASSERT(lq_false, "No font sources found for the font family: %s", lq_utf8_str_get_cstr(font_family->name));
-		return lq_core_font_interface_t();
+		return empty_font_interface;
 	}
 
 	lq_hb_ft_font_source_pool_t candidate_sources = lq_hb_ft_font_source_pool_create(font_family->sources.count);
@@ -125,7 +127,8 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 	{
 		lq_hb_ft_font_source_t* source = lq_hb_ft_font_source_pool_get(&font_family->sources, i);
 		if (source->style != query->style) { continue; }
-		lq_hb_ft_font_source_pool_acquire_back(&candidate_sources);
+		lq_hb_ft_font_source_t* candidate_source = lq_hb_ft_font_source_pool_acquire_back(&candidate_sources);
+		*candidate_source = *source;
 	}
 
 	lq_hb_ft_font_source_pool_t* candidate_sources_ptr = &candidate_sources;
@@ -178,7 +181,7 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 	{
 		LQ_DEBUG_ASSERT(lq_false, "No font source found for the query: %s", lq_utf8_str_get_cstr(query->family));
 		lq_hb_ft_font_source_pool_destroy(&candidate_sources);
-		return lq_core_font_interface_t();
+		return empty_font_interface;
 	}
 
 	lq_hb_ft_font_instance_t* new_instance = lq_hb_ft_font_instance_pool_acquire_back(&font_register->instances);

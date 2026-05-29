@@ -222,15 +222,15 @@ typedef struct lq_wrapper_font_description
 // wrapper struct for litehtml::font_metrics
 typedef struct lq_wrapper_font_metrics
 {
-	lq_pixel_t font_size   = 0;       // Font size in pixels. The same as size argument of the create_font function
-	lq_pixel_t height      = 0;       // Font height in pixels.
-	lq_pixel_t ascent      = 0;       // The distance from the baseline to the top of a line of text.
-	lq_pixel_t descent     = 0;       // The distance from the baseline to the bottom of a line of text.
-	lq_pixel_t x_height    = 0;       // Height of the symbol x
-	lq_pixel_t ch_width    = 0;       // Width of the symbol 0
-	lq_bool_t  draw_spaces = lq_true; // True to call draw text function for spaces. If False, just use space width without draw.
-	lq_pixel_t sub_shift   = 0;   // The baseline shift for subscripts.
-	lq_pixel_t super_shift = 0; // The baseline shift for superscripts.
+	lq_pixel_t font_size;   // = 0;       // Font size in pixels. The same as size argument of the create_font function
+	lq_pixel_t height;      // = 0;       // Font height in pixels.
+	lq_pixel_t ascent;      // = 0;       // The distance from the baseline to the top of a line of text.
+	lq_pixel_t descent;     // = 0;       // The distance from the baseline to the bottom of a line of text.
+	lq_pixel_t x_height;    // = 0;       // Height of the symbol x
+	lq_pixel_t ch_width;    // = 0;       // Width of the symbol 0
+	lq_bool_t  draw_spaces; // = lq_true; // True to call draw text function for spaces. If False, just use space width without draw.
+	lq_pixel_t sub_shift;   // = 0;   // The baseline shift for subscripts.
+	lq_pixel_t super_shift; // = 0;   // The baseline shift for superscripts.
 } lq_wrapper_font_metrics_t;
 
 static inline lq_pixel_t lq_wrapper_font_metrics_base_line(const lq_wrapper_font_metrics_t* metrics)

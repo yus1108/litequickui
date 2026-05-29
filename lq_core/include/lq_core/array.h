@@ -20,4 +20,6 @@ LQ_CORE_API lq_bool_t   lq_array_contains_range(const lq_array_t array, lq_uint3
 LQ_CORE_API void*       lq_array_find(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn);
 LQ_CORE_API const void* lq_array_find_const(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn);
 LQ_CORE_API void*       lq_array_find_range(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn);
-LQ_CORE_API void*       lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn);
+LQ_CORE_API const void* lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn);
+
+LQ_CORE_API lq_bool_t lq_array_find_index_range(lq_uint32_t* out_index, const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn);

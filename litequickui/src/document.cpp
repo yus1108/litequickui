@@ -5,15 +5,15 @@
 
 lq_document_font_pool lq_document_font_pool_create(lq_uint32_t capacity)
 {
-	lq_document_font_pool sources;
-	sources.array = lq_array_create(sizeof(lq_document_font_t), capacity);
-	sources.count = 0;
-	return sources;
+	lq_document_font_pool pool;
+	pool.array = lq_array_create(sizeof(lq_document_font_t), capacity);
+	pool.count = 0;
+	return pool;
 }
 
 void lq_document_font_pool_destroy(lq_document_font_pool_t* pool)
 {
-	LQ_DEBUG_ASSERT(pool != NULL, "sources must not be NULL");
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
 	lq_array_destroy(pool->array);
 	pool->array = NULL;
 	pool->count = 0;
@@ -33,10 +33,23 @@ lq_document_font_t* lq_document_font_pool_acquire_back(lq_document_font_pool_t* 
 	return (lq_document_font_t*)lq_array_get(pool->array, pool->count++);
 }
 
-lq_document_font_t* lq_document_font_pool_find(const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc)
+lq_document_font_t* lq_document_font_pool_get(lq_document_font_pool_t* pool, lq_uint32_t index)
 {
 	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	return (lq_document_font_t*)lq_array_find_range(pool->array, 0, pool->count, desc, &lq_document_font_find_by_description);
+	LQ_DEBUG_ASSERT(index < pool->count, "index out of bounds");
+	return (lq_document_font_t*)lq_array_get(pool->array, index);
+}
+
+lq_uint32_t lq_document_font_pool_get_count(const lq_document_font_pool_t* pool)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
+	return pool->count;
+}
+
+lq_bool_t lq_document_font_pool_find_index(lq_uint32_t* out_index, const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc)
+{
+	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
+	return lq_array_find_index_range(out_index, pool->array, 0, pool->count, desc, &lq_document_font_find_by_description);
 }
 
 void lq_document_font_pool_reserve(lq_document_font_pool_t* pool, lq_uint32_t capacity)
@@ -70,11 +83,50 @@ inline lq_uintptr_t lq_document_override_create_font
 	LQ_UNUSED(out_metrics);
 	LQ_UNUSED(font_desc);
 	LQ_UNUSED(litehtml_document);
-	LQ_UNUSED(data);
 
-	lq_font_register_interface_t font_register = ((lq_document_data_t*)data)->font_register;
-	LQ_DEBUG_ASSERT(lq_false, "lq_document_override_create_font is not implemented yet. You should implement this function to create real fonts based on the font description and return a valid font handle. The out_metrics should also be filled with the actual font metrics of the created font.");
-	return lq_uintptr_t();
+	lq_document_data_t* doc_data = (lq_document_data_t*)data;
+	lq_uint32_t index;
+	if (lq_document_font_pool_find_index(&index, &doc_data->font_pool, font_desc))
+	{
+		LQ_DEBUG_ASSERT(lq_false, "TODO: need to check whether this case is possible or not later");
+		*out_metrics = lq_document_font_pool_get(&doc_data->font_pool, index)->metrics;
+		return (lq_uintptr_t)index;
+	}
+
+	index = lq_document_font_pool_get_count(&doc_data->font_pool);
+	lq_document_font_t* font = lq_document_font_pool_acquire_back(&doc_data->font_pool);
+	font->desc = *font_desc;
+
+	lq_font_query_t query;
+	query.family = lq_utf8_str_create(font_desc->utf8_family);
+	query.size = font_desc->size;
+	query.style = font_desc->style;
+	query.weight = font_desc->weight;
+	font->core = doc_data->font_register.find_or_create(doc_data->font_register.ctx, &query);
+	if (font->core.ctx == 0)
+	{
+		LQ_DEBUG_ASSERT(lq_false, "Fallback to default font");
+		return 0;
+	}
+
+	font->metrics.font_size = font_desc->size;
+	font->metrics.height = font->core.get_height(font->core.ctx);
+	font->metrics.ascent = font->core.get_ascender(font->core.ctx);
+	font->metrics.descent = -font->core.get_descender(font->core.ctx);
+	font->metrics.x_height = font->core.get_x_height(font->core.ctx);
+	font->metrics.ch_width = font->core.get_0_height(font->core.ctx);
+	font->metrics.draw_spaces = lq_false;
+	font->metrics.sub_shift = 0;
+	font->metrics.super_shift = 0;
+	*out_metrics = font->metrics;
+
+	// TODO:
+	/*if (_atlasGlyphMap.ContainsKey(fontContext) == false)
+	{
+		_atlasGlyphMap.EmplaceBack(fontContext);
+	}*/
+
+	return (lq_uintptr_t)index;
 }
 
 inline void lq_document_override_delete_font(lq_uintptr_t font_handle, lq_uintptr_t data)
@@ -130,6 +182,7 @@ lq_document_t lq_document_create(lq_document_description* description)
 	document->data.callbacks.set_caption = description->callbacks.set_caption;
 	LQ_STATIC_ASSERT(sizeof(lq_document_callbacks_t) == 40, CALLBACK_STRUCT_SIZE_MISMATCH);
 
+	document->data.font_pool = lq_document_font_pool_create(description->font_cap);
 	document->data.font_register = description->font_register;
 	document->data.user_data = description->user_data;
 	document->core = lq_core_document_create(description->html_data, &document->callbacks, (lq_uintptr_t)&document->data);
@@ -138,6 +191,7 @@ lq_document_t lq_document_create(lq_document_description* description)
 
 void lq_document_destroy(lq_document_t document)
 {
+	lq_document_font_pool_destroy(&document->data.font_pool);
 	lq_core_document_destroy(document->core);
 }
 

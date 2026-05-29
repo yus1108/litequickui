@@ -53,13 +53,16 @@ lq_document_font_pool lq_document_font_pool_create(lq_uint32_t capacity);
 void 			      lq_document_font_pool_destroy(lq_document_font_pool_t* pool);
 
 lq_document_font_t* lq_document_font_pool_acquire_back(lq_document_font_pool_t* pool);
-lq_document_font_t* lq_document_font_pool_find(const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc);
+lq_document_font_t* lq_document_font_pool_get(lq_document_font_pool_t* pool, lq_uint32_t index);
+lq_uint32_t         lq_document_font_pool_get_count(const lq_document_font_pool_t* pool);
+lq_bool_t           lq_document_font_pool_find_index(lq_uint32_t* out_index, const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc);
 void 			    lq_document_font_pool_reserve(lq_document_font_pool_t* pool, lq_uint32_t capacity);
 
 typedef struct lq_document_data
 {
-	lq_font_register_interface_t font_register;
 	lq_document_callbacks_t      callbacks;
+	lq_font_register_interface_t font_register;
+	lq_document_font_pool_t      font_pool;
 	lq_uintptr_t user_data;
 } lq_document_data_t;
 

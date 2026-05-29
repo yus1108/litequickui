@@ -102,6 +102,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 	doc_desc.callbacks = doc_callbacks;
 	doc_desc.font_register = app_data.font_register;
 	doc_desc.user_data = (lq_uintptr_t)&html_data;
+	doc_desc.font_cap = 100;
 	app_data.document = lq_document_create(&doc_desc);
 	lq_utf8_str_destroy(html_str);
 

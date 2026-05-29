@@ -23,6 +23,7 @@ lq_array_t lq_array_create(lq_uint32_t element_size, lq_uint32_t element_count)
 	array->elements = calloc(element_count, element_size);
 	if (array->elements == NULL)
 	{
+		LQ_DEBUG_ASSERT(lq_false, "Failed to allocate memory for array elements");
 		free(array);
 		return NULL;
 	}
@@ -108,20 +109,37 @@ void* lq_array_find_range(const lq_array_t array, lq_uint32_t start_index, lq_ui
 	LQ_DEBUG_ASSERT(start_index <= end_index, "start_index must be less than or equal to end_index");
 	LQ_DEBUG_ASSERT(end_index <= array->element_count, "end_index must be less than or equal to array->element_count");
 
-	if (array->elements == NULL)
+	lq_uint32_t index;
+	if (lq_array_find_index_range(&index, array, start_index, end_index, key, equals_fn) == false)
 	{
 		return NULL;
+	}
+
+	return lq_array_get(array, index);
+}
+
+const void* lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	return lq_array_find_range(array, start_index, end_index, key, equals_fn);
+}
+
+lq_bool_t lq_array_find_index_range(lq_uint32_t* out_index, const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");
+	LQ_DEBUG_ASSERT(key != NULL, "key must not be NULL");
+	LQ_DEBUG_ASSERT(equals_fn != NULL, "equals_fn must not be NULL");
+	LQ_DEBUG_ASSERT(start_index <= end_index, "start_index must be less than or equal to end_index");
+	LQ_DEBUG_ASSERT(end_index <= array->element_count, "end_index must be less than or equal to array->element_count");
+
+	if (array->elements == NULL)
+	{
+		return lq_false;
 	}
 
 	for (lq_uint32_t i = start_index; i < end_index; i++)
 	{
 		void* current_element = (lq_byte_t*)array->elements + (i * array->element_size);
-		if (equals_fn(current_element, key)) { return current_element; }
+		if (equals_fn(current_element, key)) { *out_index = i; return lq_true; }
 	}
-	return NULL;
-}
-
-void* lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
-{
-	return lq_array_find_range(array, start_index, end_index, key, equals_fn);
+	return lq_false;
 }

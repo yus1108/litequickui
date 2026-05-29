@@ -7,6 +7,11 @@
 typedef struct lq_core_font_interface
 {
 	lq_uintptr_t ctx;
+	lq_pixel_t (*get_height)(lq_uintptr_t ctx);
+	lq_pixel_t (*get_ascender)(lq_uintptr_t ctx);
+	lq_pixel_t (*get_descender)(lq_uintptr_t ctx);
+	lq_pixel_t (*get_x_height)(lq_uintptr_t ctx);
+	lq_pixel_t (*get_0_height)(lq_uintptr_t ctx);
 } lq_core_font_interface_t;
 
 typedef struct lq_core_font_register_interface
