@@ -26,15 +26,11 @@ set_property(TARGET lq_test PROPERTY
 # TODO: freetype & harfbuzz should be removed from here and added to lq_hb_ft
 target_link_libraries(lq_test PRIVATE
     lq_core
-    lq_hb_ft
     litequickui
 )
 
 if(!BUILD_SHARED_LIBS)
     target_compile_definitions(litequickui PUBLIC LQ_CORE_STATIC LQ_STATIC)
-    if(LQ_TEXT_BACKEND_HB_FT)
-        target_compile_definitions(litequickui PRIVATE LQ_HB_FT_STATIC)
-    endif()
 endif()
 
 if(WIN32)

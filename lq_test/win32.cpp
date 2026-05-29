@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include <lq_core.h>
-#include <lq_hb_ft.h>
 #include <litequickui.h>
 
 #include "win32_api.h"
