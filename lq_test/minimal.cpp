@@ -24,9 +24,9 @@ lq_bool_t test_lq_core_doument_minimal_implementation(void)
 			lq_inspect_utf8_bytes(&length, nullptr, utf8_text);
 			return length * 10.0f; // Return a dummy width based on character count
 		};
-	callbacks.create_font = [](lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document) -> lq_uintptr_t
+	callbacks.create_font = [](lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t document, lq_uintptr_t user_data) -> lq_uintptr_t
 		{
-			LQ_UNUSED(font_desc, document);
+			LQ_UNUSED(font_desc, document, user_data);
 			out_metrics->font_size = font_desc->size;
 			out_metrics->height = font_desc->size * 1.2f;
 			out_metrics->ascent = font_desc->size * 0.8f;

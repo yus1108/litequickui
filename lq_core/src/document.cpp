@@ -24,7 +24,7 @@ litehtml::uint_ptr lq_wrapper_document_container::create_font(const litehtml::fo
 	descr_wrapper.emphasis_position = descr.emphasis_position;
 	LQ_STATIC_ASSERT(sizeof(litehtml::font_description) == 136, FONT_DESCRIPTION_SIZE_CHANGED);
 
-	return _callbacks.create_font(reinterpret_cast<lq_wrapper_font_metrics_t*>(fm), &descr_wrapper, reinterpret_cast<const lq_wrapper_document_t>(doc));
+	return _callbacks.create_font(reinterpret_cast<lq_wrapper_font_metrics_t*>(fm), &descr_wrapper, reinterpret_cast<const lq_wrapper_document_t>(doc), lq_core_document_get_user_data(_document));
 	LQ_STATIC_ASSERT(sizeof(litehtml::font_metrics) == sizeof(lq_wrapper_font_metrics_t), WRAPPER_STRUCT_SIZE_MISMATCH);
 }
 

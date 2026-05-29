@@ -3,12 +3,13 @@ project(litequickui)
 
 set(LITEQUICKUI_SOURCE 
  "src/document.cpp"
-)
+ "src/font_register.cpp")
 
 set(LITEQUICKUI_HEADER 
  "include/litequickui.h"
  "include/litequickui/defines.h"
  "include/litequickui/document.h"
+ "include/litequickui/font_register.h"
 )
 
 add_library(litequickui ${LITEQUICKUI_SOURCE} ${LITEQUICKUI_HEADER} )

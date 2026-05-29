@@ -4,7 +4,36 @@
 #include <math.h>
 #include <freetype/tttables.h>
 
-#include "bind.hpp"
+static inline void lq_hb_ft_font_register_add_fn_bind(lq_uintptr_t ctx, const lq_utf8_str_t font_path, const lq_utf8_str_t opt_family)
+{
+	lq_hb_ft_font_register_add((lq_hb_ft_font_register_t)ctx, font_path, opt_family);
+}
+
+static inline lq_core_font_interface_t lq_hb_ft_font_register_find_or_create_fn_bind(lq_uintptr_t ctx, const lq_font_query_t* query)
+{
+	return lq_hb_ft_font_register_find_or_create((lq_hb_ft_font_register_t)ctx, query);
+}
+
+static inline void lq_hb_ft_font_register_reserve_sources_fn_bind(lq_uintptr_t ctx, const lq_utf8_str_t family, lq_uint32_t cap)
+{
+	lq_hb_ft_font_register_reserve_sources((lq_hb_ft_font_register_t)ctx, family, cap);
+}
+
+lq_core_font_register_interface_t lq_hb_ft_font_register_create_and_bind(lq_uint32_t family_cap, lq_uint32_t inst_cap)
+{
+	lq_core_font_register_interface_t font_register_interface;
+	font_register_interface.ctx = (lq_uintptr_t)lq_hb_ft_font_register_create(family_cap, inst_cap);
+	font_register_interface.add = lq_hb_ft_font_register_add_fn_bind;
+	font_register_interface.find_or_create = lq_hb_ft_font_register_find_or_create_fn_bind;
+	font_register_interface.reserve_sources = lq_hb_ft_font_register_reserve_sources_fn_bind;
+	return font_register_interface;
+}
+
+LQ_HB_FT_API void lq_hb_ft_font_register_destroy(lq_core_font_register_interface_t* font_register)
+{
+	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
+	lq_hb_ft_font_register_destroy((lq_hb_ft_font_register_t)font_register->ctx);
+}
 
 lq_hb_ft_font_register_t lq_hb_ft_font_register_create(lq_uint32_t src_cap, lq_uint32_t inst_cap)
 {
@@ -116,7 +145,7 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 		{
 			lq_hb_ft_font_instance_t* new_instance = lq_hb_ft_font_instance_pool_acquire_back(&font_register->instances);
 			lq_hb_ft_font_init(&new_instance->font, font_register->lib, candidate_source->path, 0, query->size);
-			lq_hb_ft_font_bind_to(&new_instance->font_interface, &new_instance->font);
+			new_instance->font_interface = lq_hb_ft_font_bind(&new_instance->font);
 			new_instance->query = *query;
 
 			lq_hb_ft_font_source_pool_destroy(&candidate_sources);
@@ -154,7 +183,7 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 
 	lq_hb_ft_font_instance_t* new_instance = lq_hb_ft_font_instance_pool_acquire_back(&font_register->instances);
 	lq_hb_ft_font_init(&new_instance->font, font_register->lib, best_source->path, 0, query->size);
-	lq_hb_ft_font_bind_to(&new_instance->font_interface, &new_instance->font);
+	new_instance->font_interface = lq_hb_ft_font_bind(&new_instance->font);
 	new_instance->query = *query;
 
 	lq_hb_ft_font_source_pool_destroy(&candidate_sources);

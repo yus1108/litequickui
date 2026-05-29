@@ -1,10 +1,10 @@
 #pragma once
-#include <lq_core.h>
-#if defined(LQ_TEXT_BACKEND_HB_FT)
-#include <lq_hb_ft.h>
-#endif
+#include "defines.h"
+#include "font_register.h"
 
-#include "litequickui/defines.h"
+#include <lq_core/types.h>
+#include <lq_core/string.h>
+#include <lq_core/wrapper_types.h>
 
 typedef struct lq_document* lq_document_t;
 
@@ -17,7 +17,15 @@ typedef struct lq_document_callbacks
 	void         (*set_caption)(const lq_byte_t* utf8_caption, lq_uintptr_t user_data);
 } lq_document_callbacks_t;
 
-LQ_API lq_document_t lq_document_create(const lq_utf8_str_t html_data, const lq_document_callbacks_t* callbacks, lq_uintptr_t user_data);
+typedef struct lq_document_description
+{
+	lq_utf8_str_t html_data;
+	lq_document_callbacks_t      callbacks;
+	lq_font_register_interface_t font_register;
+	lq_uintptr_t user_data;
+} lq_document_description_t;
+
+LQ_API lq_document_t lq_document_create(lq_document_description* description);
 LQ_API void          lq_document_destroy(lq_document_t document);
 
 LQ_API lq_uintptr_t lq_document_get_user_data(const lq_document_t document);

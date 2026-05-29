@@ -43,9 +43,9 @@ lq_bool_t test_win32_api_implmenetation(void)
 	win32_app_t app = win32_app_create(app_data.title, (lq_uintptr_t)&app_data, &callbacks, NULL);
 	if (app == NULL) { return lq_false; }
 
-	lq_hb_ft_font_register_bind_to(&app_data.font_register, lq_hb_ft_font_register_create(10, 100));
+	app_data.font_register = lq_font_register_interface_create(10, 100);
+	app_data.font_register.reserve_sources(app_data.font_register.ctx, app_data.families[0], 4); // Reserve enough capacity for 4 font sources for the test font family
 
-	lq_hb_ft_font_register_reserve_sources((lq_hb_ft_font_register_t)app_data.font_register.ctx, app_data.families[0], 4); // Reserve enough capacity for 4 font sources for the test font family
 	app_data.font_register.add(app_data.font_register.ctx, app_data.font_paths[0], app_data.families[0]); // Register a common system font for testing
 
 	static const int       BITS_PER_COLOR_CHANNEL         = 8;
@@ -98,7 +98,12 @@ lq_bool_t test_win32_api_implmenetation(void)
 		};
 
 	lq_utf8_str_t html_str = lq_utf8_str_create_cstr("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Test Document</title></head><body><h1>Hello, World!</h1></body></html>");
-	app_data.document = lq_document_create(html_str, &doc_callbacks, (lq_uintptr_t)&html_data);
+	lq_document_description_t doc_desc = {};
+	doc_desc.html_data = html_str;
+	doc_desc.callbacks = doc_callbacks;
+	doc_desc.font_register = app_data.font_register;
+	doc_desc.user_data = (lq_uintptr_t)&html_data;
+	app_data.document = lq_document_create(&doc_desc);
 	lq_utf8_str_destroy(html_str);
 
 	win32_app_show(app);
@@ -112,7 +117,7 @@ lq_bool_t test_win32_api_implmenetation(void)
 
 	win32_app_destroy(app);
 	lq_utf8_str_destroy(app_data.title);
-	lq_hb_ft_font_register_destroy((lq_hb_ft_font_register_t)app_data.font_register.ctx);
+	lq_font_register_interface_destroy(&app_data.font_register);
 	return lq_true;
 }
 #endif

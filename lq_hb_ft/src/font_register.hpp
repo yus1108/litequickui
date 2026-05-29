@@ -6,6 +6,15 @@
 static inline const lq_uint32_t LQ_HB_FT_FONT_SOURCE_POOL_DEFAULT_CAPACITY = 4;
 static inline const lq_uint32_t LQ_HB_FT_POOL_CAP_MULTIPLIER = 2;
 
+typedef struct lq_hb_ft_font_register* lq_hb_ft_font_register_t;
+
+lq_hb_ft_font_register_t lq_hb_ft_font_register_create(lq_uint32_t family_cap, lq_uint32_t inst_cap);
+void                     lq_hb_ft_font_register_destroy(lq_hb_ft_font_register_t font_register);
+
+void                     lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t path, const lq_utf8_str_t opt_family);
+lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_register_t font_register, const lq_font_query_t* query);
+
+void lq_hb_ft_font_register_reserve_sources(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t family, lq_uint32_t cap);
 
 typedef struct lq_hb_ft_font_source
 {

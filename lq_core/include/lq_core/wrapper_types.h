@@ -236,4 +236,5 @@ typedef enum lq_wrapper_render_type
 	LQ_WRAPPER_RENDER_TYPE_ONLY_FIXED,
 } lq_wrapper_render_type_t;
 
+// wrapper type for litehtml::document pointer
 typedef lq_uintptr_t lq_wrapper_document_t;

@@ -12,3 +12,5 @@ typedef struct lq_hb_ft_font
 
 void lq_hb_ft_font_init(lq_hb_ft_font_t font, FT_Library lib, const lq_utf8_str_t path, lq_uint32_t index, lq_pixel_t size);
 void lq_hb_ft_font_deinit(lq_hb_ft_font_t font);
+
+lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font);

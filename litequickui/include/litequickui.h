@@ -7,3 +7,4 @@
 
 #include "litequickui/defines.h"
 #include "litequickui/document.h"
+#include "litequickui/font_register.h"

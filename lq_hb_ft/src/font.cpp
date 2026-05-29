@@ -29,3 +29,14 @@ void lq_hb_ft_font_deinit(lq_hb_ft_font_t font)
 	hb_font_destroy(font->hb_font);
 	FT_Done_Face(font->face);
 }
+
+lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+	LQ_DEBUG_ASSERT(font->hb_font != NULL, "font hb_font must not be NULL");
+
+	lq_core_font_interface_t font_interface;
+	font_interface.ctx = (lq_uintptr_t)font;
+	return font_interface;
+}
