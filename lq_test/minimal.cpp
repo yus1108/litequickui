@@ -17,9 +17,9 @@ lq_bool_t test_lq_core_doument_minimal_implementation(void)
 
 	lq_utf8_str_t html_utf8 = lq_utf8_str_create_cstr(html_cstr);
 	lq_core_document_callbacks_t callbacks = {};
-	callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t user_data) -> lq_pixel_t
+	callbacks.calc_text_width = [](const lq_byte_t* utf8_text, lq_uintptr_t font_handle) -> lq_pixel_t
 		{
-			LQ_UNUSED(font_handle, user_data);
+			LQ_UNUSED(font_handle);
 			lq_uint32_t length;
 			lq_inspect_utf8_bytes(&length, nullptr, utf8_text);
 			return length * 10.0f; // Return a dummy width based on character count

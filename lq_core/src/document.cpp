@@ -264,7 +264,7 @@ litehtml::pixel_t lq_wrapper_document_container::text_width(const char* text, li
 	LQ_DEBUG_ASSERT(lq_inspect_utf8_cstr(nullptr, nullptr, text) == lq_true, "Is this possible???");
 	LQ_DEBUG_ASSERT(_callbacks.calc_text_width != nullptr, "calc_text_width callback must be provided.");
 
-	return _callbacks.calc_text_width(lq_cast_to_bytes(text), hFont, lq_core_document_get_user_data(_document));
+	return _callbacks.calc_text_width(lq_cast_to_bytes(text), hFont);
 }
 
 void lq_wrapper_document_container::transform_text(litehtml::string& text, litehtml::text_transform tt)

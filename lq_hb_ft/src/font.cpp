@@ -84,6 +84,27 @@ lq_pixel_t lq_hb_ft_font_get_0_height(lq_hb_ft_font_t font)
 	return font->face->glyph->metrics.height / 64.0f;
 }
 
+lq_pixel_t lq_hb_ft_font_calc_text_width(lq_hb_ft_font_t font, const lq_byte_t* utf8_bytes)
+{
+	LQ_DEBUG_ASSERT(lq_inspect_utf8_bytes(NULL, NULL, utf8_bytes), "utf8_bytes must be a valid UTF-8 string");
+
+	hb_buffer_t* buf = hb_buffer_create();
+	hb_buffer_add_utf8(buf, (const char*)utf8_bytes, -1, 0, -1);
+	hb_buffer_guess_segment_properties(buf);
+	hb_shape(font->hb_font, buf, nullptr, 0);
+
+	lq_uint32_t count;
+	hb_glyph_position_t* pos = hb_buffer_get_glyph_positions(buf, &count);
+
+	lq_int32_t width = 0;
+	for (lq_uint32_t i = 0; i < count; i++)
+	{
+		width += pos[i].x_advance; // 26.6 fixed point
+	}
+	hb_buffer_destroy(buf);
+	return width / 64.0f;
+}
+
 lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font)
 {
 	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
@@ -97,5 +118,7 @@ lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font)
 	font_interface.get_descender = lq_hb_ft_font_override_get_descender;
 	font_interface.get_x_height = lq_hb_ft_font_override_get_x_height;
 	font_interface.get_0_height = lq_hb_ft_font_override_get_0_height;
+	font_interface.calc_text_width = lq_hb_ft_font_override_calc_text_width;
+	LQ_STATIC_ASSERT(sizeof(lq_core_font_interface_t) == 56, SIZE_MISMATCH);
 	return font_interface;
 }

@@ -3,14 +3,10 @@
 
 #include <stdlib.h>
 
-inline lq_pixel_t lq_document_override_calc_text_width(const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t data)
+inline lq_pixel_t lq_document_override_calc_text_width(const lq_byte_t* utf8_text, lq_uintptr_t font_handle)
 {
-	LQ_UNUSED(utf8_text);
-	LQ_UNUSED(font_handle);
-	LQ_UNUSED(data);
-
-	LQ_DEBUG_ASSERT(lq_false, "lq_document_override_calc_text_width is not implemented yet. You should implement this function to calculate real text width based on the font metrics and the actual text content. The font_handle can be used to retrieve the font metrics of the font used for the text, and the utf8_text can be analyzed to calculate the total width of the text.");
-	return lq_pixel_t();
+	lq_document_font_t* font = (lq_document_font_t*)font_handle;
+	return font->core.calc_text_width(font->core.ctx, utf8_text);
 }
 
 inline lq_uintptr_t lq_document_override_create_font

@@ -21,6 +21,7 @@ lq_pixel_t lq_hb_ft_font_get_ascender(lq_hb_ft_font_t font);
 lq_pixel_t lq_hb_ft_font_get_descender(lq_hb_ft_font_t font);
 lq_pixel_t lq_hb_ft_font_get_x_height(lq_hb_ft_font_t font);
 lq_pixel_t lq_hb_ft_font_get_0_height(lq_hb_ft_font_t font);
+lq_pixel_t lq_hb_ft_font_calc_text_width(lq_hb_ft_font_t font, const lq_byte_t* utf8_bytes);
 
 lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font);
 
@@ -47,4 +48,9 @@ static inline lq_pixel_t lq_hb_ft_font_override_get_x_height(lq_uintptr_t ctx)
 static inline lq_pixel_t lq_hb_ft_font_override_get_0_height(lq_uintptr_t ctx)
 {
 	return lq_hb_ft_font_get_0_height((lq_hb_ft_font_t)ctx);
+}
+
+static inline lq_pixel_t lq_hb_ft_font_override_calc_text_width(lq_uintptr_t ctx, const lq_byte_t* utf8_bytes)
+{
+	return lq_hb_ft_font_calc_text_width((lq_hb_ft_font_t)ctx, utf8_bytes);
 }

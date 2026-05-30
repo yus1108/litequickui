@@ -26,12 +26,7 @@ typedef struct lq_document
 	lq_document_data_t data;
 }* lq_document_t;
 
-static inline lq_pixel_t lq_document_override_calc_text_width
-(
-	const lq_byte_t* utf8_text,
-	lq_uintptr_t font_handle,
-	lq_uintptr_t data
-);
+static inline lq_pixel_t lq_document_override_calc_text_width(const lq_byte_t* utf8_text, lq_uintptr_t font_handle);
 
 static inline lq_uintptr_t lq_document_override_create_font
 (

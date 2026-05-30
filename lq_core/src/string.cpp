@@ -6,12 +6,12 @@
 
 #include "lq_core/defines.h"
 
-lq_bool_t lq_inspect_utf8_bytes(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_byte_t* raw_utf8)
+lq_bool_t lq_inspect_utf8_bytes(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_byte_t* utf8_bytes)
 {
-	if (raw_utf8 == NULL) return lq_false;
+	if (utf8_bytes == NULL) return lq_false;
 
 	lq_uint32_t length = 0;
-	const lq_byte_t* curr = raw_utf8;
+	const lq_byte_t* curr = utf8_bytes;
 
 	while (*curr != 0)
 	{
@@ -61,14 +61,14 @@ lq_bool_t lq_inspect_utf8_bytes(lq_uint32_t* out_opt_length, lq_uint32_t* out_op
 	}
 
 	if (out_opt_length != NULL) { *out_opt_length = length; }
-	if (out_opt_size != NULL) { *out_opt_size = static_cast<lq_uint32_t>(curr - raw_utf8) + 1; }
+	if (out_opt_size != NULL) { *out_opt_size = static_cast<lq_uint32_t>(curr - utf8_bytes) + 1; }
 
 	return lq_true;
 }
 
-lq_bool_t lq_inspect_utf8_cstr(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_char_t* data)
+lq_bool_t lq_inspect_utf8_cstr(lq_uint32_t* out_opt_length, lq_uint32_t* out_opt_size, const lq_char_t* utf8_cstr)
 {
-	return lq_inspect_utf8_bytes(out_opt_length, out_opt_size, reinterpret_cast<const lq_byte_t*>(data));
+	return lq_inspect_utf8_bytes(out_opt_length, out_opt_size, reinterpret_cast<const lq_byte_t*>(utf8_cstr));
 }
 
 LQ_CORE_API lq_bool_t lq_utf8_bytes_equal(const lq_byte_t* a, const lq_byte_t* b)
@@ -90,25 +90,25 @@ LQ_CORE_API lq_bool_t lq_utf8_bytes_equal(const lq_byte_t* a, const lq_byte_t* b
 	return std::memcmp(a, b, a_size) == 0 ? lq_true : lq_false;
 }
 
-lq_utf8_str_t lq_utf8_str_create(const lq_byte_t* raw_utf8)
+lq_utf8_str_t lq_utf8_str_create(const lq_byte_t* utf8_bytes)
 {
-	LQ_DEBUG_ASSERT(raw_utf8 != NULL, "Input bytes must not be null.");
+	LQ_DEBUG_ASSERT(utf8_bytes != NULL, "Input bytes must not be null.");
 
 	lq_uint32_t length, size;
-	if (lq_inspect_utf8_bytes(&length, &size, raw_utf8) == lq_false) { return NULL; }
+	if (lq_inspect_utf8_bytes(&length, &size, utf8_bytes) == lq_false) { return NULL; }
 
 	lq_utf8_str_t str = static_cast<lq_utf8_str_t>(malloc(sizeof(struct lq_utf8_str)));
 	str->bytes = static_cast<lq_byte_t*>(malloc(size));
-	std::memcpy(str->bytes, raw_utf8, size);
+	std::memcpy(str->bytes, utf8_bytes, size);
 	str->length = length;
 	str->size = size;
 	return str;
 }
 
-lq_utf8_str_t lq_utf8_str_create_cstr(const lq_char_t* bytes)
+lq_utf8_str_t lq_utf8_str_create_cstr(const lq_char_t* utf8_cstr)
 {
-	LQ_DEBUG_ASSERT(bytes != NULL, "Input bytes must not be null.");
-	return lq_utf8_str_create(reinterpret_cast<const lq_byte_t*>(bytes));
+	LQ_DEBUG_ASSERT(utf8_cstr != NULL, "Input bytes must not be null.");
+	return lq_utf8_str_create(reinterpret_cast<const lq_byte_t*>(utf8_cstr));
 }
 
 void lq_utf8_str_destroy(lq_utf8_str_t str)
