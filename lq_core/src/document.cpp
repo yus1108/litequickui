@@ -57,7 +57,7 @@ void lq_wrapper_document_container::del_clip(void)
 void lq_wrapper_document_container::delete_font(litehtml::uint_ptr hFont) noexcept
 {
 	LQ_DEBUG_ASSERT(_callbacks.delete_font != nullptr, "delete_font callback must be provided.");
-	_callbacks.delete_font(hFont, lq_core_document_get_user_data(_document));
+	_callbacks.delete_font(hFont);
 }
 
 void lq_wrapper_document_container::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders& borders, const litehtml::position& draw_pos, bool root)

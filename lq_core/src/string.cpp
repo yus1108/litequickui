@@ -111,6 +111,17 @@ lq_utf8_str_t lq_utf8_str_create_cstr(const lq_char_t* utf8_cstr)
 	return lq_utf8_str_create(reinterpret_cast<const lq_byte_t*>(utf8_cstr));
 }
 
+lq_utf8_str_t lq_utf8_str_create_copy(const lq_utf8_str_t str)
+{
+	LQ_DEBUG_ASSERT(lq_utf8_str_is_valid(str), "str to copy must be valid");
+	lq_utf8_str_t new_str = static_cast<lq_utf8_str_t>(malloc(sizeof(struct lq_utf8_str)));
+	new_str->bytes = static_cast<lq_byte_t*>(malloc(str->size));
+	std::memcpy(new_str->bytes, str->bytes, str->size);
+	new_str->length = str->length;
+	new_str->size = str->size;
+	return new_str;
+}
+
 void lq_utf8_str_destroy(lq_utf8_str_t str)
 {
 	LQ_DEBUG_ASSERT(lq_utf8_str_is_valid(str), "Input string must be valid.");

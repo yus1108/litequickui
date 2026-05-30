@@ -14,6 +14,7 @@ typedef struct lq_utf8_str* lq_utf8_str_t;
 
 LQ_CORE_API lq_utf8_str_t lq_utf8_str_create(const lq_byte_t* utf8_bytes);
 LQ_CORE_API lq_utf8_str_t lq_utf8_str_create_cstr(const lq_char_t* utf8_cstr);
+LQ_CORE_API lq_utf8_str_t lq_utf8_str_create_copy(const lq_utf8_str_t str);
 LQ_CORE_API void          lq_utf8_str_destroy(lq_utf8_str_t str);
 
 LQ_CORE_API lq_bool_t lq_utf8_str_is_valid(const lq_utf8_str_t str);

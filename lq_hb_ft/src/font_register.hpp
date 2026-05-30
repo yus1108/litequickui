@@ -15,6 +15,16 @@ typedef struct lq_hb_ft_font_source
 	lq_uint16_t weight;
 } lq_hb_ft_font_source_t;
 
+static inline lq_hb_ft_font_source_t lq_hb_ft_font_source_create_copy(const lq_hb_ft_font_source_t* source)
+{
+	lq_hb_ft_font_source_t copy;
+	LQ_DEBUG_ONLY(copy.name = lq_utf8_str_create_copy(source->name));
+	copy.path = lq_utf8_str_create_copy(source->path);
+	copy.style = source->style;
+	copy.weight = source->weight;
+	return copy;
+}
+
 static inline lq_bool_t lq_hb_ft_font_source_find_by_path(const void* element, const void* key)
 {
 	if (element == key) { return lq_true; }
@@ -64,6 +74,7 @@ lq_bool_t lq_hb_ft_font_family_pool_is_empty(const lq_hb_ft_font_family_pool_t* 
 
 lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_acquire_back(lq_hb_ft_font_family_pool_t* families);
 lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_find(const lq_hb_ft_font_family_pool_t* families, const lq_utf8_str_t family);
+lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_get(lq_hb_ft_font_family_pool_t* families, lq_uint32_t index);
 
 typedef struct lq_hb_ft_font_instance
 {
@@ -90,6 +101,7 @@ void                          lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_
 
 lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_acquire_back(lq_hb_ft_font_instance_pool_t* instances);
 lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_find(const lq_hb_ft_font_instance_pool_t* instances, const lq_font_query_t* query);
+lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_get(lq_hb_ft_font_instance_pool_t* instances, lq_uint32_t index);
 
 typedef struct lq_hb_ft_font_register
 {

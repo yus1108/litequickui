@@ -24,12 +24,9 @@ inline lq_uintptr_t lq_document_override_create_font
 	LQ_DEBUG_ASSERT(font != nullptr, "Failed to allocate memory for font.");
 	font->desc = *font_desc;
 
-	lq_font_query_t query;
-	query.family = lq_utf8_str_create(font_desc->utf8_family);
-	query.size = font_desc->size;
-	query.style = font_desc->style;
-	query.weight = font_desc->weight;
+	lq_font_query_t query = lq_font_query_create(font_desc->utf8_family, font_desc->size, font_desc->style, font_desc->weight);
 	font->core = font_register.find_or_create(font_register.ctx, &query);
+	lq_font_query_destroy(&query);
 	if (font->core.ctx == 0)
 	{
 		LQ_DEBUG_ASSERT(lq_false, "Fallback to default font");
@@ -56,12 +53,9 @@ inline lq_uintptr_t lq_document_override_create_font
 	return (lq_uintptr_t)font;
 }
 
-inline void lq_document_override_delete_font(lq_uintptr_t font_handle, lq_uintptr_t data)
+inline void lq_document_override_delete_font(lq_uintptr_t font_handle)
 {
-	LQ_UNUSED(font_handle);
-	LQ_UNUSED(data);
-
-	LQ_DEBUG_ASSERT(lq_false, "lq_document_override_delete_font is not implemented yet. You should implement this function to delete real fonts created in the lq_document_override_create_font function based on the provided font handle.");
+	free((lq_document_font_t*)font_handle);
 }
 
 inline void lq_document_override_draw_text

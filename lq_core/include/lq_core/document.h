@@ -15,7 +15,7 @@ typedef struct lq_core_document_callbacks
 	lq_pixel_t(*calc_text_width)(const lq_byte_t* utf8_text, lq_uintptr_t font_handle);
 
 	lq_uintptr_t(*create_font)(lq_wrapper_font_metrics_t* out_metrics, const lq_wrapper_font_description_t* font_desc, const lq_wrapper_document_t litehtml_document, lq_uintptr_t user_data);
-	void        (*delete_font)(lq_uintptr_t font_handle, lq_uintptr_t user_data);
+	void        (*delete_font)(lq_uintptr_t font_handle);
 
 	void (*draw_text)(lq_uintptr_t hdc, const lq_byte_t* utf8_text, lq_uintptr_t font_handle, const lq_color_t* color, const lq_rect_t* quad, lq_uintptr_t user_data);
 

@@ -37,9 +37,9 @@ lq_bool_t test_lq_core_doument_minimal_implementation(void)
 			out_metrics->super_shift = font_desc->size * 0.3f;
 			return 1; // Return a dummy non-zero font handle
 		};
-	callbacks.delete_font = [](lq_uintptr_t font_handle, lq_uintptr_t user_data)
+	callbacks.delete_font = [](lq_uintptr_t font_handle)
 		{
-			LQ_UNUSED(font_handle, user_data);
+			LQ_UNUSED(font_handle);
 			// No actual font resource to clean up in this dummy implementation
 		};
 	callbacks.draw_text = [](lq_uintptr_t hdc, const lq_byte_t* utf8_text, lq_uintptr_t font_handle, const lq_color_t* color, const lq_rect_t* quad, lq_uintptr_t user_data)

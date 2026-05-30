@@ -36,7 +36,7 @@ static inline lq_uintptr_t lq_document_override_create_font
 	lq_uintptr_t data
 );
 
-static inline void lq_document_override_delete_font(lq_uintptr_t font_handle, lq_uintptr_t data);
+ static inline void lq_document_override_delete_font(lq_uintptr_t font_handle);
 
 static inline void lq_document_override_draw_text
 (
