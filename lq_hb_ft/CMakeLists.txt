@@ -8,7 +8,6 @@ set(LQ_HB_FT_SOURCE
 
 set(LQ_HB_FT_HEADER 
  "include/lq_hb_ft.h"
- "include/lq_hb_ft/font.h"
  "include/lq_hb_ft/font_register.h" 
 )
 

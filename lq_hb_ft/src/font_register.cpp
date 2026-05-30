@@ -4,17 +4,17 @@
 #include <math.h>
 #include <freetype/tttables.h>
 
-static inline void lq_hb_ft_font_register_add_fn_bind(lq_uintptr_t ctx, const lq_utf8_str_t font_path, const lq_utf8_str_t opt_family)
+static inline void lq_hb_ft_font_register_override_add(lq_uintptr_t ctx, const lq_utf8_str_t font_path, const lq_utf8_str_t opt_family)
 {
 	lq_hb_ft_font_register_add((lq_hb_ft_font_register_t)ctx, font_path, opt_family);
 }
 
-static inline lq_core_font_interface_t lq_hb_ft_font_register_find_or_create_fn_bind(lq_uintptr_t ctx, const lq_font_query_t* query)
+static inline lq_core_font_interface_t lq_hb_ft_font_register_override_find_or_create(lq_uintptr_t ctx, const lq_font_query_t* query)
 {
 	return lq_hb_ft_font_register_find_or_create((lq_hb_ft_font_register_t)ctx, query);
 }
 
-static inline void lq_hb_ft_font_register_reserve_sources_fn_bind(lq_uintptr_t ctx, const lq_utf8_str_t family, lq_uint32_t cap)
+static inline void lq_hb_ft_font_register_override_reserve_sources(lq_uintptr_t ctx, const lq_utf8_str_t family, lq_uint32_t cap)
 {
 	lq_hb_ft_font_register_reserve_sources((lq_hb_ft_font_register_t)ctx, family, cap);
 }
@@ -23,16 +23,156 @@ lq_core_font_register_interface_t lq_hb_ft_font_register_create_and_bind(lq_uint
 {
 	lq_core_font_register_interface_t font_register_interface;
 	font_register_interface.ctx = (lq_uintptr_t)lq_hb_ft_font_register_create(family_cap, inst_cap);
-	font_register_interface.add = lq_hb_ft_font_register_add_fn_bind;
-	font_register_interface.find_or_create = lq_hb_ft_font_register_find_or_create_fn_bind;
-	font_register_interface.reserve_sources = lq_hb_ft_font_register_reserve_sources_fn_bind;
+	font_register_interface.add = lq_hb_ft_font_register_override_add;
+	font_register_interface.find_or_create = lq_hb_ft_font_register_override_find_or_create;
+	font_register_interface.reserve_sources = lq_hb_ft_font_register_override_reserve_sources;
 	return font_register_interface;
 }
 
-LQ_HB_FT_API void lq_hb_ft_font_register_destroy(lq_core_font_register_interface_t* font_register)
+void lq_hb_ft_font_register_destroy(lq_core_font_register_interface_t* font_register)
 {
 	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
-	lq_hb_ft_font_register_destroy((lq_hb_ft_font_register_t)font_register->ctx);
+	lq_hb_ft_font_register_destroy_internal((lq_hb_ft_font_register_t)font_register->ctx);
+}
+
+lq_hb_ft_font_source_pool_t lq_hb_ft_font_source_pool_create(lq_uint32_t capacity)
+{
+	lq_hb_ft_font_source_pool_t sources;
+	sources.array = lq_array_create(sizeof(lq_hb_ft_font_source_t), capacity);
+	sources.count = 0;
+	return sources;
+}
+
+void lq_hb_ft_font_source_pool_destroy(lq_hb_ft_font_source_pool_t* sources)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	lq_array_destroy(sources->array);
+	sources->array = NULL;
+	sources->count = 0;
+}
+
+lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_acquire_back(lq_hb_ft_font_source_pool_t* sources)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	LQ_DEBUG_ASSERT(sources->count < LQ_UINT32_MAX, "sources count overflow");
+
+	if (sources->count >= lq_array_get_count(sources->array))
+	{
+		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
+		(sources->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(sources->array, LQ_UINT32_MAX) : lq_array_resize(sources->array, sources->count * LQ_POOL_CAPACITY_MULTIPLIER);
+	}
+
+	return (lq_hb_ft_font_source_t*)lq_array_get(sources->array, sources->count++);
+}
+
+lq_bool_t lq_hb_ft_font_source_pool_contains(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t path)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	return lq_array_contains_range(sources->array, 0, sources->count, &path, &lq_hb_ft_font_source_find_by_path);
+}
+
+lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_find(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t* path)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	return (lq_hb_ft_font_source_t*)lq_array_find_range(sources->array, 0, sources->count, path, &lq_hb_ft_font_source_find_by_path);
+}
+
+lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_get(const lq_hb_ft_font_source_pool_t* sources, lq_uint32_t index)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	LQ_DEBUG_ASSERT(index < sources->count, "index out of bounds");
+	return (lq_hb_ft_font_source_t*)lq_array_get(sources->array, index);
+}
+
+void lq_hb_ft_font_source_pool_reserve(lq_hb_ft_font_source_pool_t* sources, lq_uint32_t capacity)
+{
+	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
+	LQ_DEBUG_ASSERT(capacity > 0, "capacity must be greater than 0");
+	if (lq_array_get_count(sources->array) < capacity)
+	{
+		lq_array_resize(sources->array, capacity);
+	}
+}
+
+lq_hb_ft_font_family_pool_t lq_hb_ft_font_family_pool_create(lq_uint32_t capacity)
+{
+	lq_hb_ft_font_family_pool_t families;
+	families.array = lq_array_create(sizeof(lq_hb_ft_font_family_t), capacity);
+	families.count = 0;
+	return families;
+}
+
+void lq_hb_ft_font_family_pool_destroy(lq_hb_ft_font_family_pool_t* families)
+{
+	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
+	lq_array_destroy(families->array);
+	families->array = NULL;
+	families->count = 0;
+}
+
+lq_bool_t lq_hb_ft_font_family_pool_is_empty(const lq_hb_ft_font_family_pool_t* families)
+{
+	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
+	return families->count == 0;
+}
+
+lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_acquire_back(lq_hb_ft_font_family_pool_t* families)
+{
+	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
+	LQ_DEBUG_ASSERT(families->count < LQ_UINT32_MAX, "families count overflow");
+
+	if (families->count >= lq_array_get_count(families->array))
+	{
+		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
+		(families->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(families->array, LQ_UINT32_MAX) : lq_array_resize(families->array, families->count * LQ_POOL_CAPACITY_MULTIPLIER);
+	}
+
+	return (lq_hb_ft_font_family_t*)lq_array_get(families->array, families->count++);
+}
+
+lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_find(const lq_hb_ft_font_family_pool_t* families, const lq_utf8_str_t family)
+{
+	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
+	if (lq_hb_ft_font_family_pool_is_empty(families)) { return NULL; }
+	return (lq_hb_ft_font_family_t*)lq_array_find_range(families->array, 0, families->count, &family, &lq_hb_ft_font_family_find_by_name);
+}
+
+lq_hb_ft_font_instance_pool_t lq_hb_ft_font_instance_pool_create(lq_uint32_t capacity)
+{
+	lq_hb_ft_font_instance_pool_t instances;
+	instances.array = lq_array_create(sizeof(lq_hb_ft_font_instance_t), capacity);
+	instances.count = 0;
+	return instances;
+}
+
+void lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* instances)
+{
+	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
+	LQ_DEBUG_ASSERT(instances->array != NULL, "instances->array must not be NULL");
+	lq_array_destroy(instances->array);
+	instances->array = NULL;
+	instances->count = 0;
+}
+
+lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_acquire_back(lq_hb_ft_font_instance_pool_t* instances)
+{
+	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
+	LQ_DEBUG_ASSERT(instances->count < LQ_UINT32_MAX, "instances count overflow");
+
+	if (instances->count >= lq_array_get_count(instances->array))
+	{
+		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font instances to avoid memory allocation which is expensive.");
+		(instances->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(instances->array, LQ_UINT32_MAX) : lq_array_resize(instances->array, instances->count * LQ_POOL_CAPACITY_MULTIPLIER);
+	}
+
+	return (lq_hb_ft_font_instance_t*)lq_array_get(instances->array, instances->count++);
+}
+
+lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_find(const lq_hb_ft_font_instance_pool_t* instances, const lq_font_query_t* query)
+{
+	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
+	LQ_DEBUG_ASSERT(query != NULL, "query must not be NULL");
+	return (lq_hb_ft_font_instance_t*)lq_array_find_range(instances->array, 0, instances->count, query, &lq_hb_ft_font_instance_find_by_query);
 }
 
 lq_hb_ft_font_register_t lq_hb_ft_font_register_create(lq_uint32_t src_cap, lq_uint32_t inst_cap)
@@ -42,15 +182,6 @@ lq_hb_ft_font_register_t lq_hb_ft_font_register_create(lq_uint32_t src_cap, lq_u
 	font_register->instances = lq_hb_ft_font_instance_pool_create(inst_cap);
 	FT_Init_FreeType(&font_register->lib);
 	return font_register;
-}
-
-void lq_hb_ft_font_register_destroy(lq_hb_ft_font_register_t font_register)
-{
-	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
-	lq_hb_ft_font_family_pool_destroy(&font_register->families);
-	lq_hb_ft_font_instance_pool_destroy(&font_register->instances);
-	FT_Done_FreeType(font_register->lib);
-	delete font_register;
 }
 
 void lq_hb_ft_font_register_add(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t path, const lq_utf8_str_t opt_family)
@@ -193,7 +324,16 @@ lq_core_font_interface_t lq_hb_ft_font_register_find_or_create(lq_hb_ft_font_reg
 	return new_instance->font_interface;
 }
 
-LQ_HB_FT_API void lq_hb_ft_font_register_reserve_sources(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t family, lq_uint32_t cap)
+void lq_hb_ft_font_register_destroy_internal(lq_hb_ft_font_register_t font_register)
+{
+	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
+	lq_hb_ft_font_family_pool_destroy(&font_register->families);
+	lq_hb_ft_font_instance_pool_destroy(&font_register->instances);
+	FT_Done_FreeType(font_register->lib);
+	delete font_register;
+}
+
+void lq_hb_ft_font_register_reserve_sources(lq_hb_ft_font_register_t font_register, const lq_utf8_str_t family, lq_uint32_t cap)
 {
 	LQ_DEBUG_ASSERT(font_register != NULL, "font_register must not be NULL");
 	LQ_DEBUG_ASSERT(cap > 0, "cap must be greater than 0");
@@ -210,144 +350,4 @@ LQ_HB_FT_API void lq_hb_ft_font_register_reserve_sources(lq_hb_ft_font_register_
 		font_family->name = family;
 		font_family->sources = lq_hb_ft_font_source_pool_create(cap);
 	}
-}
-
-lq_hb_ft_font_source_pool_t lq_hb_ft_font_source_pool_create(lq_uint32_t capacity)
-{
-	lq_hb_ft_font_source_pool_t sources;
-	sources.array = lq_array_create(sizeof(lq_hb_ft_font_source_t), capacity);
-	sources.count = 0;
-	return sources;
-}
-
-void lq_hb_ft_font_source_pool_destroy(lq_hb_ft_font_source_pool_t* sources)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	lq_array_destroy(sources->array);
-	sources->array = NULL;
-	sources->count = 0;
-}
-
-lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_acquire_back(lq_hb_ft_font_source_pool_t* sources)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	LQ_DEBUG_ASSERT(sources->count < LQ_UINT32_MAX, "sources count overflow");
-
-	if (sources->count >= lq_array_get_count(sources->array))
-	{
-		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
-		(sources->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(sources->array, LQ_UINT32_MAX) : lq_array_resize(sources->array, sources->count * LQ_POOL_CAPACITY_MULTIPLIER);
-	}
-
-	return (lq_hb_ft_font_source_t*)lq_array_get(sources->array, sources->count++);
-}
-
-lq_bool_t lq_hb_ft_font_source_pool_contains(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t path)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	return lq_array_contains_range(sources->array, 0, sources->count, &path, &lq_hb_ft_font_source_find_by_path);
-}
-
-lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_find(const lq_hb_ft_font_source_pool_t* sources, const lq_utf8_str_t* path)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	return (lq_hb_ft_font_source_t*)lq_array_find_range(sources->array, 0, sources->count, path, &lq_hb_ft_font_source_find_by_path);
-}
-
-lq_hb_ft_font_source_t* lq_hb_ft_font_source_pool_get(const lq_hb_ft_font_source_pool_t* sources, lq_uint32_t index)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	LQ_DEBUG_ASSERT(index < sources->count, "index out of bounds");
-	return (lq_hb_ft_font_source_t*)lq_array_get(sources->array, index);
-}
-
-void lq_hb_ft_font_source_pool_reserve(lq_hb_ft_font_source_pool_t* sources, lq_uint32_t capacity)
-{
-	LQ_DEBUG_ASSERT(sources != NULL, "sources must not be NULL");
-	LQ_DEBUG_ASSERT(capacity > 0, "capacity must be greater than 0");
-	if (lq_array_get_count(sources->array) < capacity)
-	{
-		lq_array_resize(sources->array, capacity);
-	}
-}
-
-lq_hb_ft_font_family_pool_t lq_hb_ft_font_family_pool_create(lq_uint32_t capacity)
-{
-	lq_hb_ft_font_family_pool_t families;
-	families.array = lq_array_create(sizeof(lq_hb_ft_font_family_t), capacity);
-	families.count = 0;
-	return families;
-}
-
-void lq_hb_ft_font_family_pool_destroy(lq_hb_ft_font_family_pool_t* families)
-{
-	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
-	lq_array_destroy(families->array);
-	families->array = NULL;
-	families->count = 0;
-}
-
-lq_bool_t lq_hb_ft_font_family_pool_is_empty(const lq_hb_ft_font_family_pool_t* families)
-{
-	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
-	return families->count == 0;
-}
-
-lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_acquire_back(lq_hb_ft_font_family_pool_t* families)
-{
-	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
-	LQ_DEBUG_ASSERT(families->count < LQ_UINT32_MAX, "families count overflow");
-
-	if (families->count >= lq_array_get_count(families->array))
-	{
-		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
-		(families->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(families->array, LQ_UINT32_MAX) : lq_array_resize(families->array, families->count * LQ_POOL_CAPACITY_MULTIPLIER);
-	}
-
-	return (lq_hb_ft_font_family_t*)lq_array_get(families->array, families->count++);
-}
-
-lq_hb_ft_font_family_t* lq_hb_ft_font_family_pool_find(const lq_hb_ft_font_family_pool_t* families, const lq_utf8_str_t family)
-{
-	LQ_DEBUG_ASSERT(families != NULL, "families must not be NULL");
-	if (lq_hb_ft_font_family_pool_is_empty(families)) { return NULL; }
-	return (lq_hb_ft_font_family_t*)lq_array_find_range(families->array, 0, families->count, &family, &lq_hb_ft_font_family_find_by_name);
-}
-
-lq_hb_ft_font_instance_pool_t lq_hb_ft_font_instance_pool_create(lq_uint32_t capacity)
-{
-	lq_hb_ft_font_instance_pool_t instances;
-	instances.array = lq_array_create(sizeof(lq_hb_ft_font_instance_t), capacity);
-	instances.count = 0;
-	return instances;
-}
-
-void lq_hb_ft_font_instance_pool_destroy(lq_hb_ft_font_instance_pool_t* instances)
-{
-	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
-	LQ_DEBUG_ASSERT(instances->array != NULL, "instances->array must not be NULL");
-	lq_array_destroy(instances->array);
-	instances->array = NULL;
-	instances->count = 0;
-}
-
-lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_acquire_back(lq_hb_ft_font_instance_pool_t* instances)
-{
-	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
-	LQ_DEBUG_ASSERT(instances->count < LQ_UINT32_MAX, "instances count overflow");
-
-	if (instances->count >= lq_array_get_count(instances->array))
-	{
-		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font instances to avoid memory allocation which is expensive.");
-		(instances->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(instances->array, LQ_UINT32_MAX) : lq_array_resize(instances->array, instances->count * LQ_POOL_CAPACITY_MULTIPLIER);
-	}
-
-	return (lq_hb_ft_font_instance_t*)lq_array_get(instances->array, instances->count++);
-}
-
-lq_hb_ft_font_instance_t* lq_hb_ft_font_instance_pool_find(const lq_hb_ft_font_instance_pool_t* instances, const lq_font_query_t* query)
-{
-	LQ_DEBUG_ASSERT(instances != NULL, "instances must not be NULL");
-	LQ_DEBUG_ASSERT(query != NULL, "query must not be NULL");
-	return (lq_hb_ft_font_instance_t*)lq_array_find_range(instances->array, 0, instances->count, query, &lq_hb_ft_font_instance_find_by_query);
 }

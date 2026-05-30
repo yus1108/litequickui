@@ -22,8 +22,8 @@ typedef struct lq_core_font_register_interface
 	void (*reserve_sources)(lq_uintptr_t ctx, const lq_utf8_str_t family, lq_uint32_t cap);
 } lq_core_font_register_interface_t;
 
-typedef lq_core_font_interface_t(*lq_core_font_register_create_fn_t)(lq_uint32_t family_cap, lq_uint32_t inst_cap);
-typedef void(*lq_core_font_register_destroy_fn_t)(lq_core_font_register_interface_t* font_register);
+typedef lq_core_font_interface_t (*lq_core_font_register_create_fn_t)(lq_uint32_t family_cap, lq_uint32_t inst_cap);
+typedef void (*lq_core_font_register_destroy_fn_t)(lq_core_font_register_interface_t* font_register);
 
 static inline lq_core_font_interface_t lq_core_font_register_create(lq_core_font_register_create_fn_t create_fn, lq_uint32_t family_cap, lq_uint32_t inst_cap)
 {

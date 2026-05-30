@@ -1,5 +1,6 @@
-#include "lq_hb_ft/font.h"
 #include "font.hpp"
+
+#include "lq_hb_ft/defines.h"
 
 #include <math.h>
 
@@ -30,6 +31,59 @@ void lq_hb_ft_font_deinit(lq_hb_ft_font_t font)
 	FT_Done_Face(font->face);
 }
 
+lq_pixel_t lq_hb_ft_font_get_height(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+	return font->face->size->metrics.height / 64.0f;
+}
+
+lq_pixel_t lq_hb_ft_font_get_ascender(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+	return font->face->size->metrics.ascender / 64.0f;
+}
+
+lq_pixel_t lq_hb_ft_font_get_descender(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+	return font->face->size->metrics.descender / 64.0f;
+}
+
+lq_pixel_t lq_hb_ft_font_get_x_height(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+
+	FT_UInt x_index = FT_Get_Char_Index(font->face, 'x');
+	if (x_index == 0)
+	{
+		LQ_DEBUG_ASSERT(false, "Font does not contain an 'x' glyph, cannot determine x-height. Using font height instead.");
+		return lq_hb_ft_font_get_height(font);
+	}
+
+	FT_Load_Glyph(font->face, x_index, FT_LOAD_TARGET_NORMAL | FT_LOAD_RENDER);
+	return font->face->glyph->metrics.height / 64.0f;
+}
+
+lq_pixel_t lq_hb_ft_font_get_0_height(lq_hb_ft_font_t font)
+{
+	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
+	LQ_DEBUG_ASSERT(font->face != NULL, "font face must not be NULL");
+
+	FT_UInt zero_index = FT_Get_Char_Index(font->face, '0');
+	if (zero_index == 0)
+	{
+		LQ_DEBUG_ASSERT(false, "Font does not contain a '0' glyph, cannot determine 0-height. Using font height instead.");
+		return lq_hb_ft_font_get_height(font);
+	}
+
+	FT_Load_Glyph(font->face, zero_index, FT_LOAD_TARGET_NORMAL | FT_LOAD_RENDER);
+	return font->face->glyph->metrics.height / 64.0f;
+}
+
 lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font)
 {
 	LQ_DEBUG_ASSERT(font != NULL, "font must not be NULL");
@@ -38,5 +92,10 @@ lq_core_font_interface_t lq_hb_ft_font_bind(lq_hb_ft_font_t font)
 
 	lq_core_font_interface_t font_interface;
 	font_interface.ctx = (lq_uintptr_t)font;
+	font_interface.get_height = lq_hb_ft_font_override_get_height;
+	font_interface.get_ascender = lq_hb_ft_font_override_get_ascender;
+	font_interface.get_descender = lq_hb_ft_font_override_get_descender;
+	font_interface.get_x_height = lq_hb_ft_font_override_get_x_height;
+	font_interface.get_0_height = lq_hb_ft_font_override_get_0_height;
 	return font_interface;
 }
