@@ -209,14 +209,14 @@ typedef struct lq_wrapper_font_description
 	const lq_byte_t*      utf8_family; // Font Family
 	lq_pixel_t            size;        // Font size
 	lq_wrapper_font_style style;       // Font style, see the enum lq_font_style
-	lq_uint32_t           weight;      // Font weight.
-	lq_uint32_t                      decoration_line;      // Decoration line. A bitset of flags of the enum lq_wrapper_text_decoration_line
+	lq_uint16_t           weight;      // Font weight.
+	lq_uint8_t                       decoration_line;      // Decoration line. A bitset of flags of the enum lq_wrapper_text_decoration_line
 	lq_wrapper_css_length_t          decoration_thickness; // Decoration line thickness in pixels. See predefined values in enum lq_wrapper_css_length_units
 	lq_wrapper_text_decoration_style decoration_style;     // Decoration line style. See enum lq_wrapper_text_decoration_style
 	lq_color_t                       decoration_color;     // Decoration line color
 	const lq_byte_t* utf8_emphasis_style; // Text emphasis style
 	lq_color_t       emphasis_color;      // Text emphasis color
-	lq_int32_t       emphasis_position;   // Text emphasis position, a bitset of flags of the enum lq_wrapper_text_emphasis_position
+	lq_uint8_t       emphasis_position;   // Text emphasis position, a bitset of flags of the enum lq_wrapper_text_emphasis_position
 } lq_wrapper_font_description_t;
 
 // wrapper struct for litehtml::font_metrics

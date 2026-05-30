@@ -3,65 +3,6 @@
 
 #include <stdlib.h>
 
-lq_document_font_pool lq_document_font_pool_create(lq_uint32_t capacity)
-{
-	lq_document_font_pool pool;
-	pool.array = lq_array_create(sizeof(lq_document_font_t), capacity);
-	pool.count = 0;
-	return pool;
-}
-
-void lq_document_font_pool_destroy(lq_document_font_pool_t* pool)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	lq_array_destroy(pool->array);
-	pool->array = NULL;
-	pool->count = 0;
-}
-
-lq_document_font_t* lq_document_font_pool_acquire_back(lq_document_font_pool_t* pool)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	LQ_DEBUG_ASSERT(pool->count < LQ_UINT32_MAX, "pool count overflow");
-
-	if (pool->count >= lq_array_get_count(pool->array))
-	{
-		LQ_DEBUG_ASSERT(lq_false, "Reserve enough capacity for font families to avoid memory allocation which is expensive.");
-		(pool->count > LQ_UINT32_MAX / LQ_POOL_CAPACITY_MULTIPLIER) ? lq_array_resize(pool->array, LQ_UINT32_MAX) : lq_array_resize(pool->array, pool->count * LQ_POOL_CAPACITY_MULTIPLIER);
-	}
-
-	return (lq_document_font_t*)lq_array_get(pool->array, pool->count++);
-}
-
-lq_document_font_t* lq_document_font_pool_get(lq_document_font_pool_t* pool, lq_uint32_t index)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	LQ_DEBUG_ASSERT(index < pool->count, "index out of bounds");
-	return (lq_document_font_t*)lq_array_get(pool->array, index);
-}
-
-lq_uint32_t lq_document_font_pool_get_count(const lq_document_font_pool_t* pool)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	return pool->count;
-}
-
-lq_bool_t lq_document_font_pool_find_index(lq_uint32_t* out_index, const lq_document_font_pool_t* pool, const lq_wrapper_font_description_t* desc)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	return lq_array_find_index_range(out_index, pool->array, 0, pool->count, desc, &lq_document_font_find_by_description);
-}
-
-void lq_document_font_pool_reserve(lq_document_font_pool_t* pool, lq_uint32_t capacity)
-{
-	LQ_DEBUG_ASSERT(pool != NULL, "pool must not be NULL");
-	LQ_DEBUG_ASSERT(capacity > 0, "capacity must be greater than 0");
-	if (lq_array_get_count(pool->array) < capacity)
-	{
-		lq_array_resize(pool->array, capacity);
-	}
-}
-
 inline lq_pixel_t lq_document_override_calc_text_width(const lq_byte_t* utf8_text, lq_uintptr_t font_handle, lq_uintptr_t data)
 {
 	LQ_UNUSED(utf8_text);
@@ -80,21 +21,11 @@ inline lq_uintptr_t lq_document_override_create_font
 	lq_uintptr_t data
 )
 {
-	LQ_UNUSED(out_metrics);
-	LQ_UNUSED(font_desc);
 	LQ_UNUSED(litehtml_document);
 
-	lq_document_data_t* doc_data = (lq_document_data_t*)data;
-	lq_uint32_t index;
-	if (lq_document_font_pool_find_index(&index, &doc_data->font_pool, font_desc))
-	{
-		LQ_DEBUG_ASSERT(lq_false, "TODO: need to check whether this case is possible or not later");
-		*out_metrics = lq_document_font_pool_get(&doc_data->font_pool, index)->metrics;
-		return (lq_uintptr_t)index;
-	}
-
-	index = lq_document_font_pool_get_count(&doc_data->font_pool);
-	lq_document_font_t* font = lq_document_font_pool_acquire_back(&doc_data->font_pool);
+	lq_font_register_interface_t font_register = ((lq_document_data_t*)data)->font_register;
+	lq_document_font_t* font = (lq_document_font_t*)malloc(sizeof(lq_document_font_t));
+	LQ_DEBUG_ASSERT(font != nullptr, "Failed to allocate memory for font.");
 	font->desc = *font_desc;
 
 	lq_font_query_t query;
@@ -102,7 +33,7 @@ inline lq_uintptr_t lq_document_override_create_font
 	query.size = font_desc->size;
 	query.style = font_desc->style;
 	query.weight = font_desc->weight;
-	font->core = doc_data->font_register.find_or_create(doc_data->font_register.ctx, &query);
+	font->core = font_register.find_or_create(font_register.ctx, &query);
 	if (font->core.ctx == 0)
 	{
 		LQ_DEBUG_ASSERT(lq_false, "Fallback to default font");
@@ -126,7 +57,7 @@ inline lq_uintptr_t lq_document_override_create_font
 		_atlasGlyphMap.EmplaceBack(fontContext);
 	}*/
 
-	return (lq_uintptr_t)index;
+	return (lq_uintptr_t)font;
 }
 
 inline void lq_document_override_delete_font(lq_uintptr_t font_handle, lq_uintptr_t data)
@@ -182,7 +113,6 @@ lq_document_t lq_document_create(lq_document_description* description)
 	document->data.callbacks.set_caption = description->callbacks.set_caption;
 	LQ_STATIC_ASSERT(sizeof(lq_document_callbacks_t) == 40, CALLBACK_STRUCT_SIZE_MISMATCH);
 
-	document->data.font_pool = lq_document_font_pool_create(description->font_cap);
 	document->data.font_register = description->font_register;
 	document->data.user_data = description->user_data;
 	document->core = lq_core_document_create(description->html_data, &document->callbacks, (lq_uintptr_t)&document->data);
@@ -191,8 +121,8 @@ lq_document_t lq_document_create(lq_document_description* description)
 
 void lq_document_destroy(lq_document_t document)
 {
-	lq_document_font_pool_destroy(&document->data.font_pool);
 	lq_core_document_destroy(document->core);
+	free(document);
 }
 
 lq_uintptr_t lq_document_get_user_data(const lq_document_t document)
