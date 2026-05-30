@@ -1,4 +1,5 @@
 #pragma once
+#include "defines.h"
 #include "types.h"
 
 typedef struct lq_array* lq_array_t;

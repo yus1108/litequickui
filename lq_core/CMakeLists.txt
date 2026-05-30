@@ -7,6 +7,7 @@ set(LQ_CORE_SOURCE
  "src/defines.cpp"
  "src/document.cpp"
  "src/string.cpp"
+ "src/vector.cpp"
  "src/wrapper_types.cpp"
 )
 
@@ -20,6 +21,7 @@ set(LQ_CORE_HEADER
  "include/lq_core/interfaces.h"
  "include/lq_core/types.h"
  "include/lq_core/string.h"
+ "include/lq_core/vector.h"
  "include/lq_core/wrapper_types.h"
 )
 
