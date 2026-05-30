@@ -111,6 +111,7 @@ lq_document_t lq_document_create(lq_document_description* description)
 
 void lq_document_destroy(lq_document_t document)
 {
+	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
 	lq_core_document_destroy(document->core);
 	free(document);
 }
@@ -125,21 +126,12 @@ lq_uintptr_t lq_document_get_user_data(const lq_document_t document)
 
 lq_pixel_t lq_document_calc_layout(lq_document_t document, lq_pixel_t max_width, lq_wrapper_render_type render_type)
 {
-	LQ_UNUSED(document);
-	LQ_UNUSED(max_width);
-	LQ_UNUSED(render_type);
-
-	LQ_DEBUG_ASSERT(lq_false, "lq_document_calc_layout is not implemented yet.");
-	return lq_pixel_t();
+	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
+	return lq_core_document_calc_layout(document->core, max_width, render_type);
 }
 
 void lq_document_draw(lq_document_t document, lq_uintptr_t hdc, lq_pixel2_t pos, const lq_rect_t* clip)
 {
-	LQ_UNUSED(document);
-	LQ_UNUSED(hdc);
-	LQ_UNUSED(pos);
-	LQ_UNUSED(clip);
-
-	LQ_DEBUG_ASSERT(lq_false, "lq_document_draw is not implemented yet.");
-	return void();
+	LQ_DEBUG_ASSERT(document != nullptr, "Input document must not be null.");
+	lq_core_document_draw(document->core, hdc, pos, clip);
 }
