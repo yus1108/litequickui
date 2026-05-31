@@ -1,6 +1,8 @@
 #pragma once
 #include "lq_core/vector.h"
 
+#include "lq_core/array.h"
+
 typedef struct lq_vector
 {
 	lq_array_t  array;

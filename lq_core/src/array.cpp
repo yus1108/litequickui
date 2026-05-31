@@ -83,47 +83,10 @@ void lq_array_resize(lq_array_t array, lq_uint32_t new_element_count)
 
 lq_bool_t lq_array_contains(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn)
 {
-	return lq_array_find_range(array, 0, array->element_count, key, equals_fn) != NULL;
+	return lq_array_contains_range(array, 0, array->element_count, key, equals_fn) != lq_false;
 }
 
 lq_bool_t lq_array_contains_range(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
-{
-	return lq_array_find_range(array, start_index, end_index, key, equals_fn) != NULL;
-}
-
-void* lq_array_find(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn)
-{
-	return lq_array_find_range(array, 0, array->element_count, key, equals_fn);
-}
-
-const void* lq_array_find_const(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn)
-{
-	return lq_array_find_range(array, 0, array->element_count, key, equals_fn);
-}
-
-void* lq_array_find_range(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
-{
-	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");
-	LQ_DEBUG_ASSERT(key != NULL, "key must not be NULL");
-	LQ_DEBUG_ASSERT(equals_fn != NULL, "equals_fn must not be NULL");
-	LQ_DEBUG_ASSERT(start_index <= end_index, "start_index must be less than or equal to end_index");
-	LQ_DEBUG_ASSERT(end_index <= array->element_count, "end_index must be less than or equal to array->element_count");
-
-	lq_uint32_t index;
-	if (lq_array_find_index_range(&index, array, start_index, end_index, key, equals_fn) == false)
-	{
-		return NULL;
-	}
-
-	return lq_array_get(array, index);
-}
-
-const void* lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
-{
-	return lq_array_find_range(array, start_index, end_index, key, equals_fn);
-}
-
-lq_bool_t lq_array_find_index_range(lq_uint32_t* out_index, const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
 {
 	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");
 	LQ_DEBUG_ASSERT(key != NULL, "key must not be NULL");
@@ -139,7 +102,70 @@ lq_bool_t lq_array_find_index_range(lq_uint32_t* out_index, const lq_array_t arr
 	for (lq_uint32_t i = start_index; i < end_index; i++)
 	{
 		void* current_element = (lq_byte_t*)array->elements + (i * array->element_size);
+		if (equals_fn(current_element, key)) { return lq_true; }
+	}
+	return lq_false;
+}
+
+void* lq_array_find(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn)
+{
+	lq_uint32_t index;
+	if (lq_array_find_index_range(array, &index, 0, array->element_count, key, equals_fn) == false)
+	{
+		return NULL;
+	}
+	return lq_array_get(array, index);
+}
+
+const void* lq_array_find_const(const lq_array_t array, const void* key, lq_array_element_find_fn equals_fn)
+{
+	lq_uint32_t index;
+	if (lq_array_find_index_range(array, &index, 0, array->element_count, key, equals_fn) == false)
+	{
+		return NULL;
+	}
+	return lq_array_get(array, index);
+}
+
+lq_bool_t lq_array_find_index(const lq_array_t array, lq_uint32_t* out_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	return lq_array_find_index_range(array, out_index, 0, array->element_count, key, equals_fn);
+}
+
+lq_bool_t lq_array_find_index_range(const lq_array_t array, lq_uint32_t* out_index, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");
+	LQ_DEBUG_ASSERT(out_index != NULL, "out_index must not be NULL");
+	LQ_DEBUG_ASSERT(start_index <= end_index, "start_index must be less than or equal to end_index");
+	LQ_DEBUG_ASSERT(end_index <= array->element_count, "end_index must be less than or equal to array->element_count");
+	LQ_DEBUG_ASSERT(key != NULL, "key must not be NULL");
+	LQ_DEBUG_ASSERT(equals_fn != NULL, "equals_fn must not be NULL");
+
+	if (array->elements == NULL)
+	{
+		return lq_false;
+	}
+
+	for (lq_uint32_t i = start_index; i < end_index; i++)
+	{
+		void* current_element = (lq_byte_t*)array->elements + (i * array->element_size);
 		if (equals_fn(current_element, key)) { *out_index = i; return lq_true; }
 	}
 	return lq_false;
+}
+
+
+void* lq_array_find_range(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	lq_uint32_t index;
+	if (lq_array_find_index_range(array, &index, start_index, end_index, key, equals_fn) == false)
+	{
+		return NULL;
+	}
+	return lq_array_get(array, index);
+}
+
+const void* lq_array_find_range_const(const lq_array_t array, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_array_element_find_fn equals_fn)
+{
+	return lq_array_find_range(array, start_index, end_index, key, equals_fn);
 }
