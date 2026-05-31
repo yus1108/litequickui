@@ -65,6 +65,12 @@ lq_uint32_t lq_array_get_count(const lq_array_t array)
 	return array->element_count;
 }
 
+lq_uint32_t lq_array_get_element_size(const lq_array_t array)
+{
+	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");
+	return array->element_size;
+}
+
 void lq_array_resize(lq_array_t array, lq_uint32_t new_element_count)
 {
 	LQ_DEBUG_ASSERT(lq_array_is_valid(array), "array must be valid");

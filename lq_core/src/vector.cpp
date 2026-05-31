@@ -1,7 +1,8 @@
-#include "lq_core/vector.h"
+ #include "lq_core/vector.h"
 #include "vector.hpp"
 
 #include <stdlib.h>
+#include <string.h>
 
 lq_vector_t lq_vector_create(lq_uint32_t element_size, lq_uint32_t capacity)
 {
@@ -79,6 +80,17 @@ void lq_vector_reserve(lq_vector_t vector, lq_uint32_t new_capacity)
 		return;
 	}
 	lq_array_resize(vector->array, new_capacity);
+}
+
+void lq_vector_shrink_to_fit(lq_vector_t vector)
+{
+	LQ_DEBUG_ASSERT(lq_vector_is_valid(vector), "Input vector is not valid.");
+	if (vector->count == lq_array_get_count(vector->array)) { return; }
+	lq_array_t temp = vector->array;
+	const lq_uint32_t element_size = lq_array_get_element_size(temp);
+	vector->array = lq_array_create(element_size, vector->count);
+	memcpy(lq_array_get(vector->array, 0), lq_array_get(temp, 0), element_size * vector->count);
+	lq_array_destroy(temp);
 }
 
 lq_bool_t lq_vector_contains(const lq_vector_t vector, const void* key, lq_vector_element_find_fn equals_fn)

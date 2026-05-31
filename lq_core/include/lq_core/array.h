@@ -13,6 +13,7 @@ LQ_CORE_API lq_bool_t lq_array_is_valid(const lq_array_t array);
 LQ_CORE_API void*       lq_array_get(lq_array_t array, lq_uint32_t index);
 LQ_CORE_API const void* lq_array_get_const(const lq_array_t array, lq_uint32_t index);
 LQ_CORE_API lq_uint32_t lq_array_get_count(const lq_array_t array);
+LQ_CORE_API lq_uint32_t lq_array_get_element_size(const lq_array_t array);
 
 LQ_CORE_API void lq_array_resize(lq_array_t array, lq_uint32_t new_element_count);
 

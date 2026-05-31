@@ -21,6 +21,7 @@ LQ_CORE_API lq_uint32_t lq_vector_get_count(const lq_vector_t vector);
 LQ_CORE_API lq_uint32_t lq_vector_get_capacity(const lq_vector_t vector);
 
 LQ_CORE_API void lq_vector_reserve(lq_vector_t vector, lq_uint32_t new_capacity);
+LQ_CORE_API void lq_vector_shrink_to_fit(lq_vector_t vector);
 
 LQ_CORE_API lq_bool_t   lq_vector_contains(const lq_vector_t vector, const void* key, lq_vector_element_find_fn equals_fn);
 LQ_CORE_API lq_bool_t   lq_vector_contains_range(const lq_vector_t vector, lq_uint32_t start_index, lq_uint32_t end_index, const void* key, lq_vector_element_find_fn equals_fn);
